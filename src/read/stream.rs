@@ -184,9 +184,8 @@ impl ZipStreamFileMetadata {
     pub fn is_dir(&self) -> bool {
         self.name()
             .chars()
-            .rev()
-            .next()
-            .map_or(false, |c| c == '/' || c == '\\')
+            .next_back()
+            .is_some_and(|c| c == '/' || c == '\\')
     }
 
     /// Returns whether the file is a regular file

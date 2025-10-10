@@ -84,7 +84,10 @@ impl<R: Read> AesReader<R> {
         let mut derived_key: Vec<u8> = vec![0; derived_key_len];
 
         // use PBKDF2 with HMAC-Sha1 to derive the key
-        pbkdf2::pbkdf2::<Hmac<Sha1>>(password, &salt, ITERATION_COUNT, &mut derived_key);
+        if pbkdf2::pbkdf2::<Hmac<Sha1>>(password, &salt, ITERATION_COUNT, &mut derived_key).is_err() {
+            // password has an invalid length
+            return Ok(None);
+        };
         let decrypt_key = &derived_key[0..key_length];
         let hmac_key = &derived_key[key_length..key_length * 2];
         let pwd_verify = &derived_key[derived_key_len - 2..];

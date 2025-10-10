@@ -935,9 +935,8 @@ impl<'a> ZipFile<'a> {
     pub fn is_dir(&self) -> bool {
         self.name()
             .chars()
-            .rev()
-            .next()
-            .map_or(false, |c| c == '/' || c == '\\')
+            .next_back()
+            .is_some_and(|c| c == '/' || c == '\\')
     }
 
     /// Returns whether the file is a regular file
@@ -991,7 +990,7 @@ impl<'a> Drop for ZipFile<'a> {
             // Get the inner `Take` reader so all decryption, decompression and CRC calculation is skipped.
             let mut reader: std::io::Take<&mut dyn std::io::Read> = match &mut self.reader {
                 ZipFileReader::NoReader => {
-                    let innerreader = ::std::mem::replace(&mut self.crypto_reader, None);
+                    let innerreader = self.crypto_reader.take();
                     innerreader.expect("Invalid reader state").into_inner()
                 }
                 reader => {
@@ -1031,7 +1030,7 @@ impl<'a> Drop for ZipFile<'a> {
 /// * `external_attributes`: `unix_mode()`: will return None
 pub fn read_zipfile_from_stream<'a, R: io::Read>(
     reader: &'a mut R,
-) -> ZipResult<Option<ZipFile<'_>>> {
+) -> ZipResult<Option<ZipFile<'a>>> {
     let signature = reader.read_u32::<LittleEndian>()?;
 
     match signature {

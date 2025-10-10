@@ -78,7 +78,7 @@ impl ZipError {
 
 impl From<ZipError> for io::Error {
     fn from(err: ZipError) -> io::Error {
-        io::Error::new(io::ErrorKind::Other, err)
+        io::Error::other(err)
     }
 }
 
