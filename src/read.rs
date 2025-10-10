@@ -228,7 +228,7 @@ fn make_crypto_reader<'a>(
         (Some(_), Some(_)) => {
             return Err(ZipError::UnsupportedArchive(
                 "AES encrypted files cannot be decrypted without the aes-crypto feature.",
-            ))
+            ));
         }
         #[cfg(feature = "aes-crypto")]
         (Some(password), Some((aes_mode, vendor_version))) => {

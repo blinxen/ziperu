@@ -3,8 +3,8 @@ use std::io::{self, Read};
 use std::path::Path;
 
 use super::{
-    central_header_to_zip_file_inner, read_zipfile_from_stream, spec, ZipError, ZipFile,
-    ZipFileData, ZipResult,
+    ZipError, ZipFile, ZipFileData, ZipResult, central_header_to_zip_file_inner,
+    read_zipfile_from_stream, spec,
 };
 
 use byteorder::{LittleEndian, ReadBytesExt};

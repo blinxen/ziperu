@@ -84,7 +84,8 @@ impl<R: Read> AesReader<R> {
         let mut derived_key: Vec<u8> = vec![0; derived_key_len];
 
         // use PBKDF2 with HMAC-Sha1 to derive the key
-        if pbkdf2::pbkdf2::<Hmac<Sha1>>(password, &salt, ITERATION_COUNT, &mut derived_key).is_err() {
+        if pbkdf2::pbkdf2::<Hmac<Sha1>>(password, &salt, ITERATION_COUNT, &mut derived_key).is_err()
+        {
             // password has an invalid length
             return Ok(None);
         };
@@ -167,12 +168,10 @@ impl<R: Read> Read for AesReaderValid<R> {
 
             // use constant time comparison to mitigate timing attacks
             if !constant_time_eq(computed_auth_code, &read_auth_code) {
-                return Err(
-                    io::Error::new(
-                        io::ErrorKind::InvalidData,
-                        "Invalid authentication code, this could be due to an invalid password or errors in the data"
-                    )
-                );
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "Invalid authentication code, this could be due to an invalid password or errors in the data",
+                ));
             }
         }
 

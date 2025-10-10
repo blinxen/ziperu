@@ -41,9 +41,7 @@ impl<R: Read> Read for Crc32Reader<R> {
         let invalid_check = !buf.is_empty() && !self.check_matches() && !self.ae2_encrypted;
 
         let count = match self.inner.read(buf) {
-            Ok(0) if invalid_check => {
-                return Err(io::Error::other("Invalid checksum"))
-            }
+            Ok(0) if invalid_check => return Err(io::Error::other("Invalid checksum")),
             Ok(n) => n,
             Err(e) => return Err(e),
         };
@@ -66,11 +64,13 @@ mod test {
         assert_eq!(reader.read(&mut buf).unwrap(), 0);
 
         let mut reader = Crc32Reader::new(data, 1, false);
-        assert!(reader
-            .read(&mut buf)
-            .unwrap_err()
-            .to_string()
-            .contains("Invalid checksum"));
+        assert!(
+            reader
+                .read(&mut buf)
+                .unwrap_err()
+                .to_string()
+                .contains("Invalid checksum")
+        );
     }
 
     #[test]

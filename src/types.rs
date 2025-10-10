@@ -52,7 +52,7 @@ mod atomic {
 #[cfg(feature = "time")]
 use crate::result::DateTimeRangeError;
 #[cfg(feature = "time")]
-use time::{error::ComponentRange, Date, Month, OffsetDateTime, PrimitiveDateTime, Time};
+use time::{Date, Month, OffsetDateTime, PrimitiveDateTime, Time, error::ComponentRange};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum System {
@@ -553,7 +553,7 @@ mod test {
     }
 
     #[cfg(feature = "time")]
-    use time::{format_description::well_known::Rfc3339, OffsetDateTime};
+    use time::{OffsetDateTime, format_description::well_known::Rfc3339};
 
     #[cfg(feature = "time")]
     #[test]

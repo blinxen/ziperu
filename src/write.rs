@@ -1,10 +1,10 @@
 //! Types for creating ZIP archives
 
 use crate::compression::CompressionMethod;
-use crate::read::{central_header_to_zip_file, ZipArchive, ZipFile};
+use crate::read::{ZipArchive, ZipFile, central_header_to_zip_file};
 use crate::result::{ZipError, ZipResult};
 use crate::spec;
-use crate::types::{AtomicU64, DateTime, System, ZipFileData, DEFAULT_VERSION};
+use crate::types::{AtomicU64, DEFAULT_VERSION, DateTime, System, ZipFileData};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use crc32fast::Hasher;
 use std::convert::TryInto;
@@ -227,9 +227,7 @@ impl Default for FileOptions {
 impl<W: Write + io::Seek> Write for ZipWriter<W> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         if !self.writing_to_file {
-            return Err(io::Error::other(
-                "No file has been started",
-            ));
+            return Err(io::Error::other("No file has been started"));
         }
         match self.inner.ref_mut() {
             Some(ref mut w) => {
@@ -243,9 +241,7 @@ impl<W: Write + io::Seek> Write for ZipWriter<W> {
                             && !self.files.last_mut().unwrap().large_file
                         {
                             let _inner = mem::replace(&mut self.inner, GenericZipWriter::Closed);
-                            return Err(io::Error::other(
-                                "Large file option has not been set",
-                            ));
+                            return Err(io::Error::other("Large file option has not been set"));
                         }
                     }
                     write_result
@@ -408,7 +404,11 @@ impl<W: Write + io::Seek> ZipWriter<W> {
             self.files.push(file);
         }
         if let Some(keys) = options.encrypt_with {
-            let mut zipwriter = crate::zipcrypto::ZipCryptoWriter { writer: core::mem::replace(&mut self.inner, GenericZipWriter::Closed).unwrap(), buffer: vec![], keys };
+            let mut zipwriter = crate::zipcrypto::ZipCryptoWriter {
+                writer: core::mem::replace(&mut self.inner, GenericZipWriter::Closed).unwrap(),
+                buffer: vec![],
+                keys,
+            };
             let crypto_header = [0u8; 12];
 
             zipwriter.write_all(&crypto_header)?;
@@ -426,10 +426,11 @@ impl<W: Write + io::Seek> ZipWriter<W> {
         match core::mem::replace(&mut self.inner, GenericZipWriter::Closed) {
             GenericZipWriter::Storer(MaybeEncrypted::Encrypted(writer)) => {
                 let crc32 = self.stats.hasher.clone().finalize();
-                self.inner = GenericZipWriter::Storer(MaybeEncrypted::Unencrypted(writer.finish(crc32)?))
+                self.inner =
+                    GenericZipWriter::Storer(MaybeEncrypted::Unencrypted(writer.finish(crc32)?))
             }
             GenericZipWriter::Storer(w) => self.inner = GenericZipWriter::Storer(w),
-            _ => unreachable!()
+            _ => unreachable!(),
         }
         let writer = self.inner.get_plain();
 
@@ -614,9 +615,7 @@ impl<W: Write + io::Seek> ZipWriter<W> {
     pub fn end_extra_data(&mut self) -> ZipResult<u64> {
         // Require `start_file_with_extra_data()`. Ensures `file` is some.
         if !self.writing_to_extra_field {
-            return Err(ZipError::Io(io::Error::other(
-                "Not writing to extra field",
-            )));
+            return Err(ZipError::Io(io::Error::other("Not writing to extra field")));
         }
         let file = self.files.last_mut().unwrap();
 
@@ -898,7 +897,7 @@ impl<W: Write + io::Seek> GenericZipWriter<W> {
                     io::ErrorKind::BrokenPipe,
                     "ZipWriter was already closed",
                 )
-                .into())
+                .into());
             }
             _ => {}
         }
@@ -920,7 +919,7 @@ impl<W: Write + io::Seek> GenericZipWriter<W> {
                     io::ErrorKind::BrokenPipe,
                     "ZipWriter was already closed",
                 )
-                .into())
+                .into());
             }
         };
 
@@ -971,7 +970,7 @@ impl<W: Write + io::Seek> GenericZipWriter<W> {
                 CompressionMethod::AES => {
                     return Err(ZipError::UnsupportedArchive(
                         "AES compression is not supported for writing",
-                    ))
+                    ));
                 }
                 #[cfg(feature = "zstd")]
                 CompressionMethod::Zstd => GenericZipWriter::Zstd(
@@ -988,7 +987,7 @@ impl<W: Write + io::Seek> GenericZipWriter<W> {
                     .unwrap(),
                 ),
                 CompressionMethod::Unsupported(..) => {
-                    return Err(ZipError::UnsupportedArchive("Unsupported compression"))
+                    return Err(ZipError::UnsupportedArchive("Unsupported compression"));
                 }
             }
         };
@@ -1236,11 +1235,9 @@ fn validate_extra_data(file: &ZipFileData) -> ZipResult<()> {
         #[cfg(not(feature = "unreserved"))]
         {
             if kind <= 31 || EXTRA_FIELD_MAPPING.contains(&kind) {
-                return Err(ZipError::Io(io::Error::other(
-                    format!(
-                        "Extra data header ID {kind:#06} requires crate feature \"unreserved\"",
-                    ),
-                )));
+                return Err(ZipError::Io(io::Error::other(format!(
+                    "Extra data header ID {kind:#06} requires crate feature \"unreserved\"",
+                ))));
             }
         }
 
@@ -1348,7 +1345,9 @@ mod test {
         assert_eq!(result.get_ref().len(), 25);
         assert_eq!(
             *result.get_ref(),
-            [80, 75, 5, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 90, 73, 80]
+            [
+                80, 75, 5, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 90, 73, 80
+            ]
         );
     }
 
@@ -1370,9 +1369,11 @@ mod test {
                 ),
             )
             .unwrap();
-        assert!(writer
-            .write(b"writing to a directory is not allowed, and will not write any data")
-            .is_err());
+        assert!(
+            writer
+                .write(b"writing to a directory is not allowed, and will not write any data")
+                .is_err()
+        );
         let result = writer.finish().unwrap();
         assert_eq!(result.get_ref().len(), 108);
         assert_eq!(
@@ -1399,9 +1400,11 @@ mod test {
                 ),
             )
             .unwrap();
-        assert!(writer
-            .write(b"writing to a symlink is not allowed and will not write any data")
-            .is_err());
+        assert!(
+            writer
+                .write(b"writing to a symlink is not allowed and will not write any data")
+                .is_err()
+        );
         let result = writer.finish().unwrap();
         assert_eq!(result.get_ref().len(), 112);
         assert_eq!(
@@ -1428,9 +1431,11 @@ mod test {
                 ),
             )
             .unwrap();
-        assert!(writer
-            .write(b"writing to a symlink is not allowed and will not write any data")
-            .is_err());
+        assert!(
+            writer
+                .write(b"writing to a symlink is not allowed and will not write any data")
+                .is_err()
+        );
         let result = writer.finish().unwrap();
         assert_eq!(result.get_ref().len(), 162);
         assert_eq!(
