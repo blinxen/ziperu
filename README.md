@@ -1,15 +1,11 @@
 zip-rs
 ======
+[![Crates.io version](https://img.shields.io/crates/v/ziperu.svg)](https://crates.io/crates/ziperu)
 
-[![Build Status](https://img.shields.io/github/workflow/status/zip-rs/zip/CI)](https://github.com/zip-rs/zip/actions?query=branch%3Amaster+workflow%3ACI)
-[![Crates.io version](https://img.shields.io/crates/v/zip.svg)](https://crates.io/crates/zip)
-[![Discord](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.gg/rQ7H9cSsF4)
-
-[Documentation](https://docs.rs/zip/0.6.3/zip/)
+[Documentation](https://docs.rs/ziperu/)
 
 Info
 ----
-
 
 A zip library for rust which supports reading and writing of simple ZIP files.
 
@@ -39,7 +35,7 @@ Without the default features:
 
 ```toml
 [dependencies]
-zip = { version = "0.6.6", default-features = false }
+zip = { version = "0.6", default-features = false }
 ```
 
 The features available are:
@@ -55,13 +51,9 @@ All of these are enabled by default.
 MSRV
 ----
 
-Our current Minimum Supported Rust Version is **1.59.0**. When adding features,
-we will follow these guidelines:
-
-- We will always support the latest four minor Rust versions. This gives you a 6
-  month window to upgrade your compiler.
-- Any change to the MSRV will be accompanied with a **minor** version bump
-   - While the crate is pre-1.0, this will be a change to the PATCH version.
+The MSRV is kept as low as possible. It will only be updated when a dependency
+forces the update.
+Every MSRV update will bump the minor version of this crate pre 1.0.
 
 Examples
 --------
