@@ -4,6 +4,9 @@ zip-rs
 
 [Documentation](https://docs.rs/ziperu/)
 
+*This is a fork of the original zip crate (version 0.6.6) before the new maintainer took over.
+My goal is to a have more stable library without any frequent breaking changes.*
+
 Info
 ----
 
