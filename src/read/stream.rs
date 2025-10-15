@@ -229,23 +229,6 @@ mod test {
         }
     }
 
-    #[derive(Default, Debug, Eq, PartialEq)]
-    struct CounterVisitor(u64, u64);
-    impl ZipStreamVisitor for CounterVisitor {
-        fn visit_file(&mut self, _file: &mut ZipFile<'_>) -> ZipResult<()> {
-            self.0 += 1;
-            Ok(())
-        }
-
-        fn visit_additional_metadata(
-            &mut self,
-            _metadata: &ZipStreamFileMetadata,
-        ) -> ZipResult<()> {
-            self.1 += 1;
-            Ok(())
-        }
-    }
-
     #[test]
     fn invalid_offset() {
         ZipStreamReader::new(io::Cursor::new(include_bytes!(
