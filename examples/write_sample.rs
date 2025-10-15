@@ -1,5 +1,5 @@
 use std::io::prelude::*;
-use zip::write::FileOptions;
+use ziperu::write::FileOptions;
 
 fn main() {
     std::process::exit(real_main());
@@ -21,16 +21,16 @@ fn real_main() -> i32 {
     0
 }
 
-fn doit(filename: &str) -> zip::result::ZipResult<()> {
+fn doit(filename: &str) -> ziperu::result::ZipResult<()> {
     let path = std::path::Path::new(filename);
     let file = std::fs::File::create(path).unwrap();
 
-    let mut zip = zip::ZipWriter::new(file);
+    let mut zip = ziperu::ZipWriter::new(file);
 
     zip.add_directory("test/", Default::default())?;
 
     let options = FileOptions::default()
-        .compression_method(zip::CompressionMethod::Stored)
+        .compression_method(ziperu::CompressionMethod::Stored)
         .unix_permissions(0o755);
     zip.start_file("test/☃.txt", options)?;
     zip.write_all(b"Hello, World!\n")?;

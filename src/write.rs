@@ -70,17 +70,17 @@ pub(crate) mod zip_writer {
     /// API to edit its contents.
     ///
     /// ```
-    /// # fn doit() -> zip::result::ZipResult<()>
+    /// # fn doit() -> ziperu::result::ZipResult<()>
     /// # {
-    /// # use zip::ZipWriter;
+    /// # use ziperu::ZipWriter;
     /// use std::io::Write;
-    /// use zip::write::FileOptions;
+    /// use ziperu::write::FileOptions;
     ///
     /// // We use a buffer here, though you'd normally use a `File`
     /// let mut buf = [0; 65536];
-    /// let mut zip = zip::ZipWriter::new(std::io::Cursor::new(&mut buf[..]));
+    /// let mut zip = ziperu::ZipWriter::new(std::io::Cursor::new(&mut buf[..]));
     ///
-    /// let options = zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Stored);
+    /// let options = ziperu::write::FileOptions::default().compression_method(ziperu::CompressionMethod::Stored);
     /// zip.start_file("hello_world.txt", options)?;
     /// zip.write(b"Hello, World!")?;
     ///
@@ -530,8 +530,8 @@ impl<W: Write + io::Seek> ZipWriter<W> {
     ///
     /// ```
     /// use byteorder::{LittleEndian, WriteBytesExt};
-    /// use zip::{ZipArchive, ZipWriter, result::ZipResult};
-    /// use zip::{write::FileOptions, CompressionMethod};
+    /// use ziperu::{ZipArchive, ZipWriter, result::ZipResult};
+    /// use ziperu::{write::FileOptions, CompressionMethod};
     /// use std::io::{Write, Cursor};
     ///
     /// # fn main() -> ZipResult<()> {
@@ -656,12 +656,12 @@ impl<W: Write + io::Seek> ZipWriter<W> {
     /// ```no_run
     /// use std::fs::File;
     /// use std::io::{Read, Seek, Write};
-    /// use zip::{ZipArchive, ZipWriter};
+    /// use ziperu::{ZipArchive, ZipWriter};
     ///
     /// fn copy_rename<R, W>(
     ///     src: &mut ZipArchive<R>,
     ///     dst: &mut ZipWriter<W>,
-    /// ) -> zip::result::ZipResult<()>
+    /// ) -> ziperu::result::ZipResult<()>
     /// where
     ///     R: Read + Seek,
     ///     W: Write + Seek,
@@ -709,9 +709,9 @@ impl<W: Write + io::Seek> ZipWriter<W> {
     /// ```no_run
     /// use std::fs::File;
     /// use std::io::{Read, Seek, Write};
-    /// use zip::{ZipArchive, ZipWriter};
+    /// use ziperu::{ZipArchive, ZipWriter};
     ///
-    /// fn copy<R, W>(src: &mut ZipArchive<R>, dst: &mut ZipWriter<W>) -> zip::result::ZipResult<()>
+    /// fn copy<R, W>(src: &mut ZipArchive<R>, dst: &mut ZipWriter<W>) -> ziperu::result::ZipResult<()>
     /// where
     ///     R: Read + Seek,
     ///     W: Write + Seek,

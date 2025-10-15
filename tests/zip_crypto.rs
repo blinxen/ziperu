@@ -23,19 +23,19 @@ use std::io::Read;
 #[test]
 fn encrypting_file() {
     use std::io::{Read, Write};
-    use zip::unstable::write::FileOptionsExt;
+    use ziperu::unstable::write::FileOptionsExt;
     let mut buf = vec![0; 2048];
-    let mut archive = zip::write::ZipWriter::new(std::io::Cursor::new(&mut buf));
+    let mut archive = ziperu::write::ZipWriter::new(std::io::Cursor::new(&mut buf));
     archive
         .start_file(
             "name",
-            zip::write::FileOptions::default().with_deprecated_encryption(b"password"),
+            ziperu::write::FileOptions::default().with_deprecated_encryption(b"password"),
         )
         .unwrap();
     archive.write_all(b"test").unwrap();
     archive.finish().unwrap();
     drop(archive);
-    let mut archive = zip::ZipArchive::new(std::io::Cursor::new(&mut buf)).unwrap();
+    let mut archive = ziperu::ZipArchive::new(std::io::Cursor::new(&mut buf)).unwrap();
     let mut file = archive.by_index_decrypt(0, b"password").unwrap().unwrap();
     let mut buf = Vec::new();
     file.read_to_end(&mut buf).unwrap();
@@ -60,7 +60,7 @@ fn encrypted_file() {
         0x00, 0x00,
     ]);
 
-    let mut archive = zip::ZipArchive::new(zip_file_bytes).unwrap();
+    let mut archive = ziperu::ZipArchive::new(zip_file_bytes).unwrap();
 
     assert_eq!(archive.len(), 1); //Only one file inside archive: `test.txt`
 
@@ -68,8 +68,8 @@ fn encrypted_file() {
         // No password
         let file = archive.by_index(0);
         match file {
-            Err(zip::result::ZipError::UnsupportedArchive(
-                zip::result::ZipError::PASSWORD_REQUIRED,
+            Err(ziperu::result::ZipError::UnsupportedArchive(
+                ziperu::result::ZipError::PASSWORD_REQUIRED,
             )) => (),
             Err(_) => panic!(
                 "Expected PasswordRequired error when opening encrypted file without password"
@@ -82,7 +82,7 @@ fn encrypted_file() {
         // Wrong password
         let file = archive.by_index_decrypt(0, b"wrong password");
         match file {
-            Ok(Err(zip::result::InvalidPassword)) => (),
+            Ok(Err(ziperu::result::InvalidPassword)) => (),
             Err(_) => panic!(
                 "Expected InvalidPassword error when opening encrypted file with wrong password"
             ),

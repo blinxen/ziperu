@@ -18,7 +18,7 @@
 // 0000002e
 
 use std::io;
-use zip::ZipArchive;
+use ziperu::ZipArchive;
 
 #[test]
 fn correctly_handle_zip_with_garbage_after_comment() {
