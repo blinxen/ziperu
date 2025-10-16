@@ -507,6 +507,13 @@ impl<R: Read + io::Seek> ZipArchive<R> {
         self.shared.names_map.keys().map(|s| s.as_str())
     }
 
+    /// Returns true if the file exists
+    ///
+    /// This method does not decrypt or initialize any metadata for the file.
+    pub fn file_exists(&self, name: &str) -> bool {
+        self.shared.names_map.contains_key(name)
+    }
+
     /// Search for a file entry by name, decrypt with given password
     ///
     /// # Warning
