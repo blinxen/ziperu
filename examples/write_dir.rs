@@ -19,7 +19,8 @@ const METHOD_STORED: Option<ziperu::CompressionMethod> = Some(ziperu::Compressio
     feature = "deflate-miniz",
     feature = "deflate-zlib"
 ))]
-const METHOD_DEFLATED: Option<ziperu::CompressionMethod> = Some(ziperu::CompressionMethod::Deflated);
+const METHOD_DEFLATED: Option<ziperu::CompressionMethod> =
+    Some(ziperu::CompressionMethod::Deflated);
 #[cfg(not(any(
     feature = "deflate",
     feature = "deflate-miniz",

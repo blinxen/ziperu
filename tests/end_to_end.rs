@@ -116,7 +116,9 @@ fn write_test_archive(
 }
 
 // Load an archive from buffer and check for test data.
-fn check_test_archive<R: Read + Seek>(zip_file: R) -> ziperu::result::ZipResult<ziperu::ZipArchive<R>> {
+fn check_test_archive<R: Read + Seek>(
+    zip_file: R,
+) -> ziperu::result::ZipResult<ziperu::ZipArchive<R>> {
     let mut archive = ziperu::ZipArchive::new(zip_file).unwrap();
 
     // Check archive contains expected file names.

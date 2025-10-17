@@ -11,8 +11,9 @@ use crate::types::{AesMode, AesVendorVersion, AtomicU64, DateTime, System, ZipFi
 use crate::zipcrypto::{ZipCryptoReader, ZipCryptoReaderValid, ZipCryptoValidator};
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::borrow::Cow;
-use std::collections::HashMap;
-use std::io::{self, prelude::*};
+use std::io;
+use std::io::Read;
+use std::io::Seek;
 use std::path::Path;
 use std::sync::Arc;
 
