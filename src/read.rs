@@ -10,6 +10,7 @@ use crate::spec;
 use crate::types::{AesMode, AesVendorVersion, AtomicU64, DateTime, System, ZipFileData};
 use crate::zipcrypto::{ZipCryptoReader, ZipCryptoReaderValid, ZipCryptoValidator};
 use byteorder::{LittleEndian, ReadBytesExt};
+use indexmap::IndexMap;
 use std::borrow::Cow;
 use std::io;
 use std::io::Read;
@@ -35,11 +36,12 @@ pub(crate) mod stream;
 
 // Put the struct declaration in a private module to convince rustdoc to display ZipArchive nicely
 pub(crate) mod zip_archive {
+    use indexmap::IndexMap;
+
     /// Extract immutable data from `ZipArchive` to make it cheap to clone
     #[derive(Debug)]
     pub(crate) struct Shared {
-        pub(super) files: Vec<super::ZipFileData>,
-        pub(super) names_map: super::HashMap<String, usize>,
+        pub(super) files: IndexMap<String, super::ZipFileData>,
         pub(super) offset: u64,
         pub(super) comment: Vec<u8>,
     }
@@ -417,8 +419,7 @@ impl<R: Read + io::Seek> ZipArchive<R> {
             number_of_files
         };
 
-        let mut files = Vec::with_capacity(file_capacity);
-        let mut names_map = HashMap::with_capacity(file_capacity);
+        let mut files = IndexMap::with_capacity(file_capacity);
 
         if reader.seek(io::SeekFrom::Start(directory_start)).is_err() {
             return Err(ZipError::InvalidArchive(
@@ -428,13 +429,11 @@ impl<R: Read + io::Seek> ZipArchive<R> {
 
         for _ in 0..number_of_files {
             let file = central_header_to_zip_file(&mut reader, archive_offset)?;
-            names_map.insert(file.file_name.clone(), files.len());
-            files.push(file);
+            files.insert(file.file_name.clone(), file);
         }
 
         let shared = Arc::new(zip_archive::Shared {
             files,
-            names_map,
             offset: archive_offset,
             comment: footer.zip_file_comment,
         });
@@ -505,14 +504,14 @@ impl<R: Read + io::Seek> ZipArchive<R> {
 
     /// Returns an iterator over all the file and directory names in this archive.
     pub fn file_names(&self) -> impl Iterator<Item = &str> {
-        self.shared.names_map.keys().map(|s| s.as_str())
+        self.shared.files.keys().map(|s| s.as_str())
     }
 
     /// Returns true if the file exists
     ///
     /// This method does not decrypt or initialize any metadata for the file.
     pub fn file_exists(&self, name: &str) -> bool {
-        self.shared.names_map.contains_key(name)
+        self.shared.files.contains_key(name)
     }
 
     /// Search for a file entry by name, decrypt with given password
@@ -546,8 +545,8 @@ impl<R: Read + io::Seek> ZipArchive<R> {
         name: &str,
         password: Option<&[u8]>,
     ) -> ZipResult<Result<ZipFile<'a>, InvalidPassword>> {
-        let index = match self.shared.names_map.get(name) {
-            Some(index) => *index,
+        let index = match self.shared.files.get_index_of(name) {
+            Some(index) => index,
             None => {
                 return Err(ZipError::FileNotFound);
             }
@@ -588,9 +587,9 @@ impl<R: Read + io::Seek> ZipArchive<R> {
         let reader = &mut self.reader;
         self.shared
             .files
-            .get(file_number)
+            .get_index(file_number)
             .ok_or(ZipError::FileNotFound)
-            .and_then(move |data| {
+            .and_then(move |(_, data)| {
                 Ok(ZipFile {
                     crypto_reader: None,
                     reader: ZipFileReader::Raw(find_content(data, reader)?),
@@ -604,10 +603,10 @@ impl<R: Read + io::Seek> ZipArchive<R> {
         file_number: usize,
         mut password: Option<&[u8]>,
     ) -> ZipResult<Result<ZipFile<'a>, InvalidPassword>> {
-        let data = self
+        let (_, data) = self
             .shared
             .files
-            .get(file_number)
+            .get_index(file_number)
             .ok_or(ZipError::FileNotFound)?;
 
         match (password, data.encrypted) {
