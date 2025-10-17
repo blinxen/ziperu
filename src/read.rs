@@ -992,7 +992,7 @@ impl<'a> Drop for ZipFile<'a> {
         // self.data is Owned, this reader is constructed by a streaming reader.
         // In this case, we want to exhaust the reader so that the next file is accessible.
         if let Cow::Owned(_) = self.data {
-            let mut buffer = [0; 1 << 16];
+            let mut buffer = Vec::with_capacity(65536);
 
             // Get the inner `Take` reader so all decryption, decompression and CRC calculation is skipped.
             let mut reader: std::io::Take<&mut dyn std::io::Read> = match &mut self.reader {
@@ -1006,15 +1006,8 @@ impl<'a> Drop for ZipFile<'a> {
                 }
             };
 
-            loop {
-                match reader.read(&mut buffer) {
-                    Ok(0) => break,
-                    Ok(_) => (),
-                    Err(e) => {
-                        panic!("Could not consume all of the output of the current ZipFile: {e:?}")
-                    }
-                }
-            }
+            // We don't care if we couldn't read till the end
+            drop(reader.read_to_end(&mut buffer));
         }
     }
 }
