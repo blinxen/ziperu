@@ -30,7 +30,7 @@ sha1 = {version = "0.10.6", optional = true }
 time = { version = "0.3.44", optional = true, default-features = false, features = ["std"] }
 zstd = { version = "0.13.3", optional = true }
 
-[target.'cfg(any(all(target_arch = "arm", target_pointer_width = "32"), target_arch = "mips", target_arch = "powerpc"))'.dependencies]
+[target.'cfg(not(target_has_atomic = "64"))'.dependencies]
 crossbeam-utils = "0.8.21"
 
 [dev-dependencies]
