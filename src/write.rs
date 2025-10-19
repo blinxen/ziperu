@@ -12,6 +12,7 @@ use std::default::Default;
 use std::io;
 use std::io::prelude::*;
 use std::mem;
+use std::path::Path;
 
 #[cfg(any(
     feature = "deflate",
@@ -480,9 +481,9 @@ impl<W: Write + io::Seek> ZipWriter<W> {
         since = "0.5.7",
         note = "by stripping `..`s from the path, the meaning of paths can change. Use `start_file` instead."
     )]
-    pub fn start_file_from_path(
+    pub fn start_file_from_path<P: AsRef<Path>>(
         &mut self,
-        path: &std::path::Path,
+        path: P,
         options: FileOptions,
     ) -> ZipResult<()> {
         self.start_file(path_to_string(path), options)
@@ -763,9 +764,9 @@ impl<W: Write + io::Seek> ZipWriter<W> {
         since = "0.5.7",
         note = "by stripping `..`s from the path, the meaning of paths can change. Use `add_directory` instead."
     )]
-    pub fn add_directory_from_path(
+    pub fn add_directory_from_path<P: AsRef<Path>>(
         &mut self,
-        path: &std::path::Path,
+        path: &P,
         options: FileOptions,
     ) -> ZipResult<()> {
         self.add_directory(path_to_string(path), options)
@@ -1316,9 +1317,9 @@ fn write_central_zip64_extra_field<T: Write>(writer: &mut T, file: &ZipFileData)
     Ok(size)
 }
 
-fn path_to_string(path: &std::path::Path) -> String {
+fn path_to_string<P: AsRef<Path>>(path: P) -> String {
     let mut path_str = String::new();
-    for component in path.components() {
+    for component in path.as_ref().components() {
         if let std::path::Component::Normal(os_str) = component {
             if !path_str.is_empty() {
                 path_str.push('/');
