@@ -162,7 +162,7 @@ impl ZipStreamFileMetadata {
     /// [`ZipFile::enclosed_name`] is the better option in most scenarios.
     ///
     /// [`ParentDir`]: `std::path::Component::ParentDir`
-    pub fn mangled_name(&self) -> ::std::path::PathBuf {
+    pub fn mangled_name(&self) -> std::path::PathBuf {
         self.0.file_name_sanitized()
     }
 

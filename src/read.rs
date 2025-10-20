@@ -880,7 +880,7 @@ impl<'a> ZipFile<'a> {
         note = "by stripping `..`s from the path, the meaning of paths can change.
                 `mangled_name` can be used if this behaviour is desirable"
     )]
-    pub fn sanitized_name(&self) -> ::std::path::PathBuf {
+    pub fn sanitized_name(&self) -> std::path::PathBuf {
         self.mangled_name()
     }
 
@@ -896,7 +896,7 @@ impl<'a> ZipFile<'a> {
     /// [`ZipFile::enclosed_name`] is the better option in most scenarios.
     ///
     /// [`ParentDir`]: `std::path::Component::ParentDir`
-    pub fn mangled_name(&self) -> ::std::path::PathBuf {
+    pub fn mangled_name(&self) -> std::path::PathBuf {
         self.data.file_name_sanitized()
     }
 
@@ -1001,7 +1001,7 @@ impl<'a> Drop for ZipFile<'a> {
                     innerreader.expect("Invalid reader state").into_inner()
                 }
                 reader => {
-                    let innerreader = ::std::mem::replace(reader, ZipFileReader::NoReader);
+                    let innerreader = std::mem::replace(reader, ZipFileReader::NoReader);
                     innerreader.into_inner()
                 }
             };

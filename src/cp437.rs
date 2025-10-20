@@ -12,11 +12,11 @@ pub trait FromCp437 {
 }
 
 impl<'a> FromCp437 for &'a [u8] {
-    type Target = ::std::borrow::Cow<'a, str>;
+    type Target = std::borrow::Cow<'a, str>;
 
     fn from_cp437(self) -> Self::Target {
         if self.iter().all(|c| *c < 0x80) {
-            ::std::str::from_utf8(self).unwrap().into()
+            std::str::from_utf8(self).unwrap().into()
         } else {
             self.iter().map(|c| to_char(*c)).collect::<String>().into()
         }
@@ -167,7 +167,7 @@ fn to_char(input: u8) -> char {
         0xfe => 0x25a0,
         0xff => 0x00a0,
     };
-    ::std::char::from_u32(output).unwrap()
+    std::char::from_u32(output).unwrap()
 }
 
 #[cfg(test)]

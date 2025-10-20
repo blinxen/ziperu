@@ -92,7 +92,7 @@ pub struct DateTime {
     second: u8,
 }
 
-impl ::std::default::Default for DateTime {
+impl std::default::Default for DateTime {
     /// Constructs an 'default' datetime of 1980-01-01 00:00:00
     fn default() -> DateTime {
         DateTime {
@@ -345,7 +345,7 @@ pub struct ZipFileData {
 }
 
 impl ZipFileData {
-    pub fn file_name_sanitized(&self) -> ::std::path::PathBuf {
+    pub fn file_name_sanitized(&self) -> std::path::PathBuf {
         let no_null_filename = match self.file_name.find('\0') {
             Some(index) => &self.file_name[0..index],
             None => &self.file_name,
@@ -355,7 +355,7 @@ impl ZipFileData {
         // zip files can contain both / and \ as separators regardless of the OS
         // and as we want to return a sanitized PathBuf that only supports the
         // OS separator let's convert incompatible separators to compatible ones
-        let separator = ::std::path::MAIN_SEPARATOR;
+        let separator = std::path::MAIN_SEPARATOR;
         let opposite_separator = match separator {
             '/' => '\\',
             _ => '/',
@@ -363,10 +363,10 @@ impl ZipFileData {
         let filename =
             no_null_filename.replace(&opposite_separator.to_string(), &separator.to_string());
 
-        ::std::path::Path::new(&filename)
+        std::path::Path::new(&filename)
             .components()
-            .filter(|component| matches!(*component, ::std::path::Component::Normal(..)))
-            .fold(::std::path::PathBuf::new(), |mut path, ref cur| {
+            .filter(|component| matches!(*component, std::path::Component::Normal(..)))
+            .fold(std::path::PathBuf::new(), |mut path, ref cur| {
                 path.push(cur.as_os_str());
                 path
             })
@@ -503,7 +503,7 @@ mod test {
         };
         assert_eq!(
             data.file_name_sanitized(),
-            ::std::path::PathBuf::from("path/etc/passwd")
+            std::path::PathBuf::from("path/etc/passwd")
         );
     }
 

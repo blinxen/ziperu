@@ -1330,7 +1330,9 @@ fn path_to_string<P: AsRef<Path>>(path: P) -> Box<str> {
                 // If os_str is valid UTF-8 then to_str has a smaller memory footprint and is
                 // faster than to_string_lossy
                 normalized_path.push(
-                    os_str.to_str().map_or_else(|| os_str.to_string_lossy(), Cow::Borrowed)
+                    os_str
+                        .to_str()
+                        .map_or_else(|| os_str.to_string_lossy(), Cow::Borrowed),
                 );
             }
             std::path::Component::ParentDir => drop(normalized_path.pop()),
