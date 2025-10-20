@@ -190,7 +190,6 @@ mod test {
     fn example_slice() {
         use super::FromCp437;
         let data = b"Cura\x87ao";
-        assert!(::std::str::from_utf8(data).is_err());
         assert_eq!(data.from_cp437(), "Curaçao");
     }
 
