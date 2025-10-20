@@ -7,6 +7,7 @@ use crate::spec;
 use crate::types::{AtomicU64, DEFAULT_VERSION, DateTime, System, ZipFileData};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use crc32fast::Hasher;
+use std::borrow::Cow;
 use std::convert::TryInto;
 use std::default::Default;
 use std::io;
@@ -1317,17 +1318,23 @@ fn write_central_zip64_extra_field<T: Write>(writer: &mut T, file: &ZipFileData)
     Ok(size)
 }
 
-fn path_to_string<P: AsRef<Path>>(path: P) -> String {
-    let mut path_str = String::new();
+fn path_to_string<P: AsRef<Path>>(path: P) -> Box<str> {
+    let mut normalized_path = Vec::new();
     for component in path.as_ref().components() {
-        if let std::path::Component::Normal(os_str) = component {
-            if !path_str.is_empty() {
-                path_str.push('/');
+        match component {
+            std::path::Component::Normal(os_str) => {
+                // If os_str is valid UTF-8 then to_str has a smaller memory footprint and is
+                // faster than to_string_lossy
+                normalized_path.push(
+                    os_str.to_str().map_or_else(|| os_str.to_string_lossy(), Cow::Borrowed)
+                );
             }
-            path_str.push_str(&os_str.to_string_lossy());
+            std::path::Component::ParentDir => drop(normalized_path.pop()),
+            std::path::Component::RootDir => normalized_path.clear(),
+            _ => {}
         }
     }
-    path_str
+    normalized_path.join("/").into_boxed_str()
 }
 
 #[cfg(test)]
@@ -1488,8 +1495,7 @@ mod test {
         path.push("..");
         path.push(".");
         path.push("system32");
-        let path_str = super::path_to_string(&path);
-        assert_eq!(path_str, "windows/system32");
+        assert_eq!(super::path_to_string(&path), "system32".into());
     }
 }
 

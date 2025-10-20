@@ -98,7 +98,7 @@ where
             // and mapname conversion failed error on unzip
             println!("adding dir {path:?} as {name:?} ...");
             #[allow(deprecated)]
-            zip.add_directory_from_path(name, options)?;
+            zip.add_directory_from_path(&name, options)?;
         }
     }
     zip.finish()?;
