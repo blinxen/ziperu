@@ -458,6 +458,9 @@ impl<W: Write + io::Seek> ZipWriter<W> {
 
     /// Create a file in the archive and start writing its' contents.
     ///
+    /// Use [`ZipWriter::start_file_from_path`] if you want the path to be normalized first.
+    /// Otherswise name is used as is.
+    ///
     /// The data should be written using the [`io::Write`] implementation on this [`ZipWriter`]
     pub fn start_file<S>(&mut self, name: S, mut options: FileOptions) -> ZipResult<()>
     where
@@ -474,14 +477,13 @@ impl<W: Write + io::Seek> ZipWriter<W> {
         Ok(())
     }
 
-    /// Starts a file, taking a Path as argument.
+    /// Create a file in the archive and start writing its' contents.
     ///
-    /// This function ensures that the '/' path separator is used. It also ignores all non 'Normal'
-    /// Components, such as a starting '/' or '..' and '.'.
-    #[deprecated(
-        since = "0.5.7",
-        note = "by stripping `..`s from the path, the meaning of paths can change. Use `start_file` instead."
-    )]
+    /// This function ensures that the `/` path separator is used. It also normalizes all non "Normal"
+    /// Components, such as a starting `/` or `..` and `.`. Use [`ZipWriter::start_file`] if you
+    /// don't want to normalize the file path.
+    ///
+    /// The data should be written using the [`io::Write`] implementation on this [`ZipWriter`]
     pub fn start_file_from_path<P: AsRef<Path>>(
         &mut self,
         path: P,
@@ -734,6 +736,9 @@ impl<W: Write + io::Seek> ZipWriter<W> {
 
     /// Add a directory entry.
     ///
+    /// Use [`ZipWriter::add_directory_from_path`] if you want the path to be normalized first.
+    /// Otherswise name is used as is.
+    ///
     /// As directories have no content, you must not call [`ZipWriter::write`] before adding a new file.
     pub fn add_directory<S>(&mut self, name: S, mut options: FileOptions) -> ZipResult<()>
     where
@@ -759,12 +764,11 @@ impl<W: Write + io::Seek> ZipWriter<W> {
 
     /// Add a directory entry, taking a Path as argument.
     ///
-    /// This function ensures that the '/' path separator is used. It also ignores all non 'Normal'
-    /// Components, such as a starting '/' or '..' and '.'.
-    #[deprecated(
-        since = "0.5.7",
-        note = "by stripping `..`s from the path, the meaning of paths can change. Use `add_directory` instead."
-    )]
+    /// This function ensures that the `/` path separator is used. It also normalizes all non "Normal"
+    /// Components, such as a starting `/` or `..` and `.`. Use [`ZipWriter::add_directory`] if you
+    /// don't want to normalize the directory path.
+    ///
+    /// As directories have no content, you must not call [`ZipWriter::write`] before adding a new file.
     pub fn add_directory_from_path<P: AsRef<Path>>(
         &mut self,
         path: &P,
