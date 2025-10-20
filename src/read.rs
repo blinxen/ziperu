@@ -895,7 +895,7 @@ impl<'a> ZipFile<'a> {
     /// `foo/../bar` as `foo/bar` (instead of `bar`). Because of this,
     /// [`ZipFile::enclosed_name`] is the better option in most scenarios.
     ///
-    /// [`ParentDir`]: `Component::ParentDir`
+    /// [`ParentDir`]: `std::path::Component::ParentDir`
     pub fn mangled_name(&self) -> ::std::path::PathBuf {
         self.data.file_name_sanitized()
     }
