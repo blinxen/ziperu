@@ -1,4 +1,4 @@
-zip-rs
+ziperu
 ======
 [![Crates.io version](https://img.shields.io/crates/v/ziperu.svg)](https://crates.io/crates/ziperu)
 
@@ -26,20 +26,6 @@ Currently unsupported zip extensions:
 
 Usage
 -----
-
-With all default features:
-
-```toml
-[dependencies]
-zip = "0.6"
-```
-
-Without the default features:
-
-```toml
-[dependencies]
-zip = { version = "0.6", default-features = false }
-```
 
 The features available are:
 
