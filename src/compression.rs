@@ -2,7 +2,6 @@
 
 use std::fmt;
 
-#[allow(deprecated)]
 /// Identifies the storage format used to compress a file within a ZIP archive.
 ///
 /// Each file's compression method is stored alongside it, allowing the
@@ -35,10 +34,9 @@ pub enum CompressionMethod {
     #[cfg(feature = "zstd")]
     Zstd,
     /// Unsupported compression method
-    #[deprecated(since = "0.5.7", note = "use the constants instead")]
     Unsupported(u16),
 }
-#[allow(deprecated, missing_docs)]
+#[allow(missing_docs)]
 /// All compression methods defined for the ZIP format
 impl CompressionMethod {
     pub const STORE: Self = CompressionMethod::Stored;
@@ -86,12 +84,7 @@ impl CompressionMethod {
 }
 impl CompressionMethod {
     /// Converts an u16 to its corresponding CompressionMethod
-    #[deprecated(
-        since = "0.5.7",
-        note = "use a constant to construct a compression method"
-    )]
     pub fn from_u16(val: u16) -> CompressionMethod {
-        #[allow(deprecated)]
         match val {
             0 => CompressionMethod::Stored,
             #[cfg(any(
@@ -112,12 +105,7 @@ impl CompressionMethod {
     }
 
     /// Converts a CompressionMethod to a u16
-    #[deprecated(
-        since = "0.5.7",
-        note = "to match on other compression methods, use a constant"
-    )]
     pub fn to_u16(self) -> u16 {
-        #[allow(deprecated)]
         match self {
             CompressionMethod::Stored => 0,
             #[cfg(any(
@@ -167,9 +155,7 @@ mod test {
     #[test]
     fn from_eq_to() {
         for v in 0..(u16::MAX as u32 + 1) {
-            #[allow(deprecated)]
             let from = CompressionMethod::from_u16(v as u16);
-            #[allow(deprecated)]
             let to = from.to_u16() as u32;
             assert_eq!(v, to);
         }
@@ -178,11 +164,8 @@ mod test {
     #[test]
     fn to_eq_from() {
         fn check_match(method: CompressionMethod) {
-            #[allow(deprecated)]
             let to = method.to_u16();
-            #[allow(deprecated)]
             let from = CompressionMethod::from_u16(to);
-            #[allow(deprecated)]
             let back = from.to_u16();
             assert_eq!(to, back);
         }

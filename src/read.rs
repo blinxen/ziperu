@@ -219,11 +219,8 @@ fn make_crypto_reader<'a>(
     aes_info: Option<(AesMode, AesVendorVersion)>,
     #[cfg(feature = "aes-crypto")] compressed_size: u64,
 ) -> ZipResult<Result<CryptoReader<'a>, InvalidPassword>> {
-    #[allow(deprecated)]
-    {
-        if let CompressionMethod::Unsupported(_) = compression_method {
-            return unsupported_zip_error("Compression method not supported");
-        }
+    if let CompressionMethod::Unsupported(_) = compression_method {
+        return unsupported_zip_error("Compression method not supported");
     }
 
     let reader = match (password, aes_info) {
@@ -712,10 +709,7 @@ fn central_header_to_zip_file_inner<R: Read>(
         version_made_by: version_made_by as u8,
         encrypted,
         using_data_descriptor,
-        compression_method: {
-            #[allow(deprecated)]
-            CompressionMethod::from_u16(compression_method)
-        },
+        compression_method: CompressionMethod::from_u16(compression_method),
         compression_level: None,
         last_modified_time: DateTime::from_msdos(last_mod_date, last_mod_time),
         crc32,
@@ -805,10 +799,7 @@ fn parse_extra_field(file: &mut ZipFileData) -> ZipResult<()> {
                     0x03 => file.aes_mode = Some((AesMode::Aes256, vendor_version)),
                     _ => return Err(ZipError::InvalidArchive("Invalid AES encryption strength")),
                 };
-                file.compression_method = {
-                    #[allow(deprecated)]
-                    CompressionMethod::from_u16(compression_method)
-                };
+                file.compression_method = CompressionMethod::from_u16(compression_method);
             }
             _ => {
                 // Other fields are ignored
@@ -1044,7 +1035,6 @@ pub fn read_zipfile_from_stream<'a, R: io::Read>(
     let encrypted = flags & 1 == 1;
     let is_utf8 = flags & (1 << 11) != 0;
     let using_data_descriptor = flags & (1 << 3) != 0;
-    #[allow(deprecated)]
     let compression_method = CompressionMethod::from_u16(reader.read_u16::<LittleEndian>()?);
     let last_mod_time = reader.read_u16::<LittleEndian>()?;
     let last_mod_date = reader.read_u16::<LittleEndian>()?;
