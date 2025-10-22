@@ -36,7 +36,13 @@ The features available are:
 * `time`: Enables features using the [time](https://github.com/time-rs/time) crate.
 * `zstd`: Enables the Zstandard compression algorithm.
 
-All of these are enabled by default.
+By default the following features are enabled:
+
+* `aes-crypto`
+* `bzip2`
+* `deflate`
+* `time`
+* `zstd`
 
 MSRV
 ----
