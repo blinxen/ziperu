@@ -33,7 +33,7 @@ The features available are:
 * `deflate`: Enables the deflate compression algorithm, which is the default for zip files.
 * `deflate64`: Enables the deflate64 compression algorithm. Only decompression is supported.
 * `bzip2`: Enables the BZip2 compression algorithm.
-* `time`: Enables features using the [time](https://github.com/rust-lang-deprecated/time) crate.
+* `time`: Enables features using the [time](https://github.com/time-rs/time) crate.
 * `zstd`: Enables the Zstandard compression algorithm.
 
 All of these are enabled by default.
