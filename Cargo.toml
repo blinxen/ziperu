@@ -29,6 +29,7 @@ pbkdf2 = {version = "0.12.2", optional = true }
 sha1 = {version = "0.10.6", optional = true }
 time = { version = "0.3.44", optional = true, default-features = false, features = ["std"] }
 zstd = { version = "0.13.3", optional = true }
+deflate64 = { version = "0.1.10", optional = true }
 
 [target.'cfg(not(target_has_atomic = "64"))'.dependencies]
 crossbeam-utils = "0.8.21"

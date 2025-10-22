@@ -959,6 +959,12 @@ impl<W: Write + io::Seek> GenericZipWriter<W> {
                         ))? as u32,
                     ),
                 )),
+                #[cfg(feature = "deflate64")]
+                CompressionMethod::Deflate64 => {
+                    return Err(ZipError::UnsupportedArchive(
+                        "Compression using deflate64 is currently not supported",
+                    ));
+                }
                 #[cfg(feature = "bzip2")]
                 CompressionMethod::Bzip2 => GenericZipWriter::Bzip2(BzEncoder::new(
                     bare,
