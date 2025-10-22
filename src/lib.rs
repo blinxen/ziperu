@@ -9,16 +9,19 @@
 //!
 //! ---
 //!
-//! [`zip`](`crate`) has support for the most common ZIP archives found in common use.
+//! [`ziperu`](`crate`) has support for the most common ZIP archives found in common use.
 //! However, in special cases,
 //! there are some zip archives that are difficult to read or write.
 //!
 //! This is a list of supported features:
 //!
-//! |         | Reading | Writing |
-//! | ------- | ------  | ------- |
-//! | Deflate | ✅ [->](`crate::ZipArchive::by_name`)      | ✅ [->](`crate::write::FileOptions::compression_method`) |
-//!
+//! |                | Reading | Writing |
+//! | -------------- | ------  | ------- |
+//! | AES encryption |  ✅     |  ✅     |
+//! | Bzip2          |  ✅     |  ✅     |
+//! | Deflate        |  ✅     |  ✅     |
+//! | Deflate64      |  ✅     |         |
+//! | Stored         |  ✅     |  ✅     |
 //!
 //!
 
