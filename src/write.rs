@@ -930,7 +930,6 @@ impl<W: Write + io::Seek> GenericZipWriter<W> {
         };
 
         *self = {
-            #[allow(deprecated)]
             match compression {
                 CompressionMethod::Stored => {
                     if compression_level.is_some() {
@@ -1106,7 +1105,6 @@ fn write_local_file_header<T: Write>(writer: &mut T, file: &ZipFileData) -> ZipR
     } | if file.encrypted { 1u16 << 0 } else { 0 };
     writer.write_u16::<LittleEndian>(flag)?;
     // Compression method
-    #[allow(deprecated)]
     writer.write_u16::<LittleEndian>(file.compression_method.to_u16())?;
     // last mod file time and last mod file date
     writer.write_u16::<LittleEndian>(file.last_modified_time.timepart())?;
@@ -1180,7 +1178,6 @@ fn write_central_directory_header<T: Write>(writer: &mut T, file: &ZipFileData) 
     } | if file.encrypted { 1u16 << 0 } else { 0 };
     writer.write_u16::<LittleEndian>(flag)?;
     // compression method
-    #[allow(deprecated)]
     writer.write_u16::<LittleEndian>(file.compression_method.to_u16())?;
     // last mod file time + date
     writer.write_u16::<LittleEndian>(file.last_modified_time.timepart())?;
