@@ -4,7 +4,7 @@ use crate::compression::CompressionMethod;
 use crate::read::{ZipArchive, ZipFile, central_header_to_zip_file};
 use crate::result::{ZipError, ZipResult};
 use crate::spec;
-use crate::types::{AtomicU64, DateTime, System, ZipFileData, DEFAULT_VERSION, VERSION_MADE_BY};
+use crate::types::{AtomicU64, DateTime, System, ZipFileData, DEFAULT_MINIMUM_ZIP_SPECIFICATION_VERSION, VERSION_MADE_BY};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use crc32fast::Hasher;
 use std::borrow::Cow;
@@ -845,7 +845,7 @@ impl<W: Write + io::Seek> ZipWriter<W> {
                     version_made_by: (3 << 8) | VERSION_MADE_BY as u16,
                     #[cfg(windows)]
                     version_made_by: (10 << 8) | VERSION_MADE_BY as u16,
-                    version_needed_to_extract: DEFAULT_VERSION as u16,
+                    version_needed_to_extract: DEFAULT_MINIMUM_ZIP_SPECIFICATION_VERSION as u16,
                     disk_number: 0,
                     disk_with_central_directory: 0,
                     number_of_files_on_this_disk: self.files.len() as u64,
@@ -1430,7 +1430,7 @@ mod test {
         assert_eq!(
             *result.get_ref(),
             &[
-                80u8, 75, 3, 4, 20, 0, 0, 0, 0, 0, 163, 165, 15, 77, 252, 47, 111, 70, 6, 0, 0, 0,
+                80u8, 75, 3, 4, 10, 0, 0, 0, 0, 0, 163, 165, 15, 77, 252, 47, 111, 70, 6, 0, 0, 0,
                 6, 0, 0, 0, 4, 0, 0, 0, 110, 97, 109, 101, 116, 97, 114, 103, 101, 116, 80, 75, 1,
                 2, 63, 3, 10, 0, 0, 0, 0, 0, 163, 165, 15, 77, 252, 47, 111, 70, 6, 0, 0, 0, 6, 0,
                 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 161, 0, 0, 0, 0, 110, 97, 109, 101,
@@ -1461,7 +1461,7 @@ mod test {
         assert_eq!(
             *result.get_ref(),
             &[
-                80u8, 75, 3, 4, 20, 0, 0, 0, 0, 0, 163, 165, 15, 77, 95, 41, 81, 245, 36, 0, 0, 0,
+                80u8, 75, 3, 4, 10, 0, 0, 0, 0, 0, 163, 165, 15, 77, 95, 41, 81, 245, 36, 0, 0, 0,
                 36, 0, 0, 0, 14, 0, 0, 0, 100, 105, 114, 101, 99, 116, 111, 114, 121, 92, 108, 105,
                 110, 107, 47, 97, 98, 115, 111, 108, 117, 116, 101, 47, 115, 121, 109, 108, 105,
                 110, 107, 92, 119, 105, 116, 104, 92, 109, 105, 120, 101, 100, 47, 115, 108, 97,

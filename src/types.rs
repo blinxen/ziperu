@@ -43,6 +43,7 @@ mod atomic {
 
 #[cfg(feature = "time")]
 use crate::result::DateTimeRangeError;
+use crate::CompressionMethod;
 #[cfg(feature = "time")]
 use time::{Date, Month, OffsetDateTime, PrimitiveDateTime, Time, error::ComponentRange};
 
@@ -266,8 +267,7 @@ impl TryFrom<OffsetDateTime> for DateTime {
 // This defined the major (6) + minor (3) version of the This defined the major (6)
 // + minor (3) version of the implemented APPNOTE spec
 pub const VERSION_MADE_BY: u8 = 6 * 10 + 3;
-
-pub const DEFAULT_VERSION: u8 = 46;
+pub const DEFAULT_MINIMUM_ZIP_SPECIFICATION_VERSION: u16 = 46;
 
 /// A type like `AtomicU64` except it implements `Clone` and has predefined
 /// ordering.
@@ -417,20 +417,42 @@ impl ZipFileData {
         }
     }
 
-    pub fn zip64_extension(&self) -> bool {
-        self.uncompressed_size > 0xFFFFFFFF
-            || self.compressed_size > 0xFFFFFFFF
-            || self.header_start > 0xFFFFFFFF
+    pub fn is_directory(&self) -> bool {
+        self.unix_mode().is_some_and(|mode| (mode & ffi::S_IFDIR) == ffi::S_IFDIR)
     }
 
     pub fn version_needed(&self) -> u16 {
-        // higher versions matched first
-        match (self.zip64_extension(), self.compression_method) {
+        // See chapter 4.4.3.2 in https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
+        let compression = match self.compression_method {
+            CompressionMethod::Stored => 10,
+            #[cfg(any(
+                feature = "deflate",
+                feature = "deflate-miniz",
+                feature = "deflate-zlib"
+            ))]
+            CompressionMethod::Deflated => 20,
+            #[cfg(feature = "deflate64")]
+            CompressionMethod::Deflate64 => 21,
             #[cfg(feature = "bzip2")]
-            (_, crate::compression::CompressionMethod::Bzip2) => 46,
-            (true, _) => 45,
-            _ => 20,
-        }
+            CompressionMethod::Bzip2 => 46,
+            _ => DEFAULT_MINIMUM_ZIP_SPECIFICATION_VERSION,
+        };
+
+        let encryption = if self.aes_mode.is_some() {
+            51
+        } else {
+            10
+        };
+
+        let features = if self.large_file {
+            45
+        } else if self.is_directory() {
+            20
+        } else {
+            10
+        };
+
+        compression.max(encryption).max(features)
     }
 }
 
