@@ -4,7 +4,7 @@ use crate::compression::CompressionMethod;
 use crate::read::{ZipArchive, ZipFile, central_header_to_zip_file};
 use crate::result::{ZipError, ZipResult};
 use crate::spec;
-use crate::types::{AtomicU64, DateTime, System, ZipFileData, DEFAULT_MINIMUM_ZIP_SPECIFICATION_VERSION, VERSION_MADE_BY};
+use crate::types::{AtomicU64, DateTime, System, ZipFileData, DEFAULT_MINIMUM_ZIP_SPECIFICATION_VERSION, APPNOTE_SPEC_VERSION};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use crc32fast::Hasher;
 use std::borrow::Cow;
@@ -374,7 +374,7 @@ impl<W: Write + io::Seek> ZipWriter<W> {
             let permissions = options.permissions.unwrap_or(0o100644);
             let mut file = ZipFileData {
                 system: System::Unix,
-                version_made_by: VERSION_MADE_BY,
+                version_made_by: APPNOTE_SPEC_VERSION,
                 encrypted: options.encrypt_with.is_some(),
                 using_data_descriptor: false,
                 compression_method: options.compression_method,
@@ -842,9 +842,9 @@ impl<W: Write + io::Seek> ZipWriter<W> {
             {
                 let zip64_footer = spec::Zip64CentralDirectoryEnd {
                     #[cfg(not(windows))]
-                    version_made_by: (3 << 8) | VERSION_MADE_BY as u16,
+                    version_made_by: (3 << 8) | APPNOTE_SPEC_VERSION as u16,
                     #[cfg(windows)]
-                    version_made_by: (10 << 8) | VERSION_MADE_BY as u16,
+                    version_made_by: (10 << 8) | APPNOTE_SPEC_VERSION as u16,
                     version_needed_to_extract: DEFAULT_MINIMUM_ZIP_SPECIFICATION_VERSION as u16,
                     disk_number: 0,
                     disk_with_central_directory: 0,

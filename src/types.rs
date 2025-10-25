@@ -266,7 +266,7 @@ impl TryFrom<OffsetDateTime> for DateTime {
 }
 // This defined the major (6) + minor (3) version of the This defined the major (6)
 // + minor (3) version of the implemented APPNOTE spec
-pub const VERSION_MADE_BY: u8 = 6 * 10 + 3;
+pub const APPNOTE_SPEC_VERSION: u8 = 6 * 10 + 3;
 pub const DEFAULT_MINIMUM_ZIP_SPECIFICATION_VERSION: u16 = 46;
 
 /// A type like `AtomicU64` except it implements `Clone` and has predefined
