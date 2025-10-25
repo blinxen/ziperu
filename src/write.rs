@@ -4,7 +4,7 @@ use crate::compression::CompressionMethod;
 use crate::read::{ZipArchive, ZipFile, central_header_to_zip_file};
 use crate::result::{ZipError, ZipResult};
 use crate::spec;
-use crate::types::{AtomicU64, DEFAULT_VERSION, DateTime, System, ZipFileData};
+use crate::types::{AtomicU64, DateTime, System, ZipFileData, DEFAULT_VERSION, VERSION_MADE_BY};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use crc32fast::Hasher;
 use std::borrow::Cow;
@@ -374,7 +374,7 @@ impl<W: Write + io::Seek> ZipWriter<W> {
             let permissions = options.permissions.unwrap_or(0o100644);
             let mut file = ZipFileData {
                 system: System::Unix,
-                version_made_by: DEFAULT_VERSION,
+                version_made_by: VERSION_MADE_BY,
                 encrypted: options.encrypt_with.is_some(),
                 using_data_descriptor: false,
                 compression_method: options.compression_method,
@@ -841,7 +841,10 @@ impl<W: Write + io::Seek> ZipWriter<W> {
                 || central_size.max(central_start) > spec::ZIP64_BYTES_THR
             {
                 let zip64_footer = spec::Zip64CentralDirectoryEnd {
-                    version_made_by: DEFAULT_VERSION as u16,
+                    #[cfg(not(windows))]
+                    version_made_by: (3 << 8) | VERSION_MADE_BY as u16,
+                    #[cfg(windows)]
+                    version_made_by: (10 << 8) | VERSION_MADE_BY as u16,
                     version_needed_to_extract: DEFAULT_VERSION as u16,
                     disk_number: 0,
                     disk_with_central_directory: 0,
@@ -1397,7 +1400,7 @@ mod test {
             *result.get_ref(),
             &[
                 80u8, 75, 3, 4, 20, 0, 0, 0, 0, 0, 163, 165, 15, 77, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 5, 0, 0, 0, 116, 101, 115, 116, 47, 80, 75, 1, 2, 46, 3, 20, 0, 0, 0, 0, 0,
+                0, 0, 5, 0, 0, 0, 116, 101, 115, 116, 47, 80, 75, 1, 2, 63, 3, 20, 0, 0, 0, 0, 0,
                 163, 165, 15, 77, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 237, 65, 0, 0, 0, 0, 116, 101, 115, 116, 47, 80, 75, 5, 6, 0, 0, 0, 0, 1, 0,
                 1, 0, 51, 0, 0, 0, 35, 0, 0, 0, 0, 0,
@@ -1429,7 +1432,7 @@ mod test {
             &[
                 80u8, 75, 3, 4, 20, 0, 0, 0, 0, 0, 163, 165, 15, 77, 252, 47, 111, 70, 6, 0, 0, 0,
                 6, 0, 0, 0, 4, 0, 0, 0, 110, 97, 109, 101, 116, 97, 114, 103, 101, 116, 80, 75, 1,
-                2, 46, 3, 20, 0, 0, 0, 0, 0, 163, 165, 15, 77, 252, 47, 111, 70, 6, 0, 0, 0, 6, 0,
+                2, 63, 3, 10, 0, 0, 0, 0, 0, 163, 165, 15, 77, 252, 47, 111, 70, 6, 0, 0, 0, 6, 0,
                 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 161, 0, 0, 0, 0, 110, 97, 109, 101,
                 80, 75, 5, 6, 0, 0, 0, 0, 1, 0, 1, 0, 50, 0, 0, 0, 40, 0, 0, 0, 0, 0
             ] as &[u8],
@@ -1462,7 +1465,7 @@ mod test {
                 36, 0, 0, 0, 14, 0, 0, 0, 100, 105, 114, 101, 99, 116, 111, 114, 121, 92, 108, 105,
                 110, 107, 47, 97, 98, 115, 111, 108, 117, 116, 101, 47, 115, 121, 109, 108, 105,
                 110, 107, 92, 119, 105, 116, 104, 92, 109, 105, 120, 101, 100, 47, 115, 108, 97,
-                115, 104, 101, 115, 80, 75, 1, 2, 46, 3, 20, 0, 0, 0, 0, 0, 163, 165, 15, 77, 95,
+                115, 104, 101, 115, 80, 75, 1, 2, 63, 3, 10, 0, 0, 0, 0, 0, 163, 165, 15, 77, 95,
                 41, 81, 245, 36, 0, 0, 0, 36, 0, 0, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255,
                 161, 0, 0, 0, 0, 100, 105, 114, 101, 99, 116, 111, 114, 121, 92, 108, 105, 110,
                 107, 80, 75, 5, 6, 0, 0, 0, 0, 1, 0, 1, 0, 60, 0, 0, 0, 80, 0, 0, 0, 0, 0

@@ -263,6 +263,9 @@ impl TryFrom<OffsetDateTime> for DateTime {
         }
     }
 }
+// This defined the major (6) + minor (3) version of the This defined the major (6)
+// + minor (3) version of the implemented APPNOTE spec
+pub const VERSION_MADE_BY: u8 = 6 * 10 + 3;
 
 pub const DEFAULT_VERSION: u8 = 46;
 
