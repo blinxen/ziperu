@@ -148,7 +148,7 @@ impl FileOptions {
     ///
     /// Range of values depends on compression method:
     /// * `Deflated`: 0 - 9. Default is 6
-    /// * `Bzip2`: 0 - 9. Default is 6
+    /// * `Bzip2`: 1 - 9. Default is 6
     /// * `Zstd`: -7 - 22, with zero being mapped to default level. Default is 3
     /// * others: only `None` is allowed
     #[must_use]
