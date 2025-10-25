@@ -17,9 +17,10 @@ Changelog
 
 ### Bugfixes
 
+- https://github.com/zip-rs/zip-old/issues/154
 - https://github.com/zip-rs/zip-old/issues/280
 - https://github.com/zip-rs/zip-old/issues/432
-- Consider `..` when normalizing paths
+- Fixed a bug where `..` was not considered when paths were normalized
 
 [0.6.6]
 -------
