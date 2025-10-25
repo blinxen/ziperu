@@ -41,9 +41,9 @@ mod atomic {
     }
 }
 
+use crate::CompressionMethod;
 #[cfg(feature = "time")]
 use crate::result::DateTimeRangeError;
-use crate::CompressionMethod;
 #[cfg(feature = "time")]
 use time::{Date, Month, OffsetDateTime, PrimitiveDateTime, Time, error::ComponentRange};
 
@@ -418,7 +418,8 @@ impl ZipFileData {
     }
 
     pub fn is_directory(&self) -> bool {
-        self.unix_mode().is_some_and(|mode| (mode & ffi::S_IFDIR) == ffi::S_IFDIR)
+        self.unix_mode()
+            .is_some_and(|mode| (mode & ffi::S_IFDIR) == ffi::S_IFDIR)
     }
 
     pub fn version_needed(&self) -> u16 {
@@ -438,11 +439,7 @@ impl ZipFileData {
             _ => DEFAULT_MINIMUM_ZIP_SPECIFICATION_VERSION,
         };
 
-        let encryption = if self.aes_mode.is_some() {
-            51
-        } else {
-            10
-        };
+        let encryption = if self.aes_mode.is_some() { 51 } else { 10 };
 
         let features = if self.large_file {
             45

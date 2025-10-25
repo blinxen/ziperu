@@ -4,7 +4,10 @@ use crate::compression::CompressionMethod;
 use crate::read::{ZipArchive, ZipFile, central_header_to_zip_file};
 use crate::result::{ZipError, ZipResult};
 use crate::spec;
-use crate::types::{AtomicU64, DateTime, System, ZipFileData, DEFAULT_MINIMUM_ZIP_SPECIFICATION_VERSION, APPNOTE_SPEC_VERSION};
+use crate::types::{
+    APPNOTE_SPEC_VERSION, AtomicU64, DEFAULT_MINIMUM_ZIP_SPECIFICATION_VERSION, DateTime, System,
+    ZipFileData,
+};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use crc32fast::Hasher;
 use std::borrow::Cow;
@@ -845,7 +848,7 @@ impl<W: Write + io::Seek> ZipWriter<W> {
                     version_made_by: (3 << 8) | APPNOTE_SPEC_VERSION as u16,
                     #[cfg(windows)]
                     version_made_by: (10 << 8) | APPNOTE_SPEC_VERSION as u16,
-                    version_needed_to_extract: DEFAULT_MINIMUM_ZIP_SPECIFICATION_VERSION as u16,
+                    version_needed_to_extract: DEFAULT_MINIMUM_ZIP_SPECIFICATION_VERSION,
                     disk_number: 0,
                     disk_with_central_directory: 0,
                     number_of_files_on_this_disk: self.files.len() as u64,
