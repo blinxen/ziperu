@@ -18,6 +18,8 @@ Supported compression formats:
 * deflate
 * bzip2
 * zstd
+* lzma
+* xz
 
 Currently unsupported zip extensions:
 
@@ -35,6 +37,8 @@ The features available are:
 * `bzip2`: Enables the BZip2 compression algorithm.
 * `time`: Enables features using the [time](https://github.com/time-rs/time) crate.
 * `zstd`: Enables the Zstandard compression algorithm.
+* `lzma`: Enables the LZMA compression algorithm.
+* `xz`: Enables the XZ compression algorithm.
 
 By default the following features are enabled:
 

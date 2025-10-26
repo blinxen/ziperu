@@ -15,6 +15,8 @@ Changelog
 - Undeprecate `CompressionMethod::from_u16` and `CompressionMethod::to_u16`
 - Add decompression support for deflate64
 - Decrease minimum version from 46 (bzip2) to 10 (stored)
+- Support LZMA compression
+- Support XZ compression
 
 ### Bugfixes
 
