@@ -151,7 +151,7 @@ enum ZipFileReader<'a> {
     #[cfg(feature = "lzma")]
     Lzma(Crc32Reader<lzma_reader::LzmaReader<CryptoReader<'a>>>),
     #[cfg(feature = "xz")]
-    Xz(Crc32Reader<XzReader<CryptoReader<'a>>>),
+    Xz(Crc32Reader<Box<XzReader<CryptoReader<'a>>>>),
 }
 
 impl<'a> Read for ZipFileReader<'a> {
@@ -329,7 +329,7 @@ fn make_reader(
         #[cfg(feature = "xz")]
         CompressionMethod::Xz => {
             let xz_reader = XzReader::new(reader, false);
-            ZipFileReader::Xz(Crc32Reader::new(xz_reader, crc32, ae2_encrypted))
+            ZipFileReader::Xz(Crc32Reader::new(Box::new(xz_reader), crc32, ae2_encrypted))
         }
         _ => panic!("Compression method not supported"),
     }

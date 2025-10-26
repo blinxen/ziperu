@@ -66,9 +66,9 @@ enum GenericZipWriter<W: Write + io::Seek> {
     #[cfg(feature = "zstd")]
     Zstd(ZstdEncoder<'static, MaybeEncrypted<W>>),
     #[cfg(feature = "lzma")]
-    Lzma(lzma_rust2::LzmaWriter<MaybeEncrypted<W>>),
+    Lzma(Box<lzma_rust2::LzmaWriter<MaybeEncrypted<W>>>),
     #[cfg(feature = "xz")]
-    Xz(lzma_rust2::XzWriter<MaybeEncrypted<W>>),
+    Xz(Box<lzma_rust2::XzWriter<MaybeEncrypted<W>>>),
 }
 // Put the struct declaration in a private module to convince rustdoc to display ZipWriter nicely
 pub(crate) mod zip_writer {
@@ -1012,7 +1012,7 @@ impl<W: Write + io::Seek> GenericZipWriter<W> {
                     .map_err(ZipError::Io)?,
                 ),
                 #[cfg(feature = "lzma")]
-                CompressionMethod::Lzma => GenericZipWriter::Lzma(
+                CompressionMethod::Lzma => GenericZipWriter::Lzma(Box::new(
                     lzma_rust2::LzmaWriter::new(
                         bare,
                         &lzma_rust2::LzmaOptions::with_preset(
@@ -1026,9 +1026,9 @@ impl<W: Write + io::Seek> GenericZipWriter<W> {
                         None,
                     )
                     .map_err(ZipError::Io)?,
-                ),
+                )),
                 #[cfg(feature = "xz")]
-                CompressionMethod::Xz => GenericZipWriter::Xz(
+                CompressionMethod::Xz => GenericZipWriter::Xz(Box::new(
                     lzma_rust2::XzWriter::new(
                         bare,
                         lzma_rust2::XzOptions::with_preset(
@@ -1039,7 +1039,7 @@ impl<W: Write + io::Seek> GenericZipWriter<W> {
                         ),
                     )
                     .map_err(ZipError::Io)?,
-                ),
+                )),
                 CompressionMethod::Unsupported(..) => {
                     return Err(ZipError::UnsupportedArchive("Unsupported compression"));
                 }

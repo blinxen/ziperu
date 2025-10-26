@@ -7,7 +7,7 @@ enum ReaderState<R> {
         uncompressed_size: u64,
     },
     Initialized {
-        reader: lzma_rust2::LzmaReader<R>,
+        reader: Box<lzma_rust2::LzmaReader<R>>,
     },
 }
 
@@ -72,7 +72,7 @@ impl<R: Read> Read for LzmaReader<R> {
 
                 let res = lzma_reader.read(buf);
                 self.state = ReaderState::Initialized {
-                    reader: lzma_reader,
+                    reader: Box::new(lzma_reader),
                 };
 
                 res
