@@ -1,92 +1,66 @@
 name: CI
 
-on:
-  pull_request:
-  push:
-    branches:
-      - master
+on: [push, pull_request, workflow_dispatch]
 
 env:
   RUSTFLAGS: -Dwarnings
+  MSRV: "1.85"
 
 jobs:
+  check:
+    name: Check (MSRV)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Rust version ${{ env.MSRV }}
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.MSRV }}
+
+      - name: Run cargo check
+        run: cargo check --workspace --all-features --examples
+
   build_and_test:
     name: Build and test
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
-        rust: [stable, 1.85.0]
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
 
     steps:
-    - uses: actions/checkout@master
+      - uses: actions/checkout@v5
 
-    - name: Install ${{ matrix.rust }}
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: ${{ matrix.rust }}
-        override: true
+      - name: Setup Rust version ${{ env.MSRV }}
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.MSRV }}
 
-    - name: check
-      uses: actions-rs/cargo@v1
-      with:
-        command: check
-        args: --all --bins --examples
+      - name: Run cargo test
+        run: cargo test --workspace --all-features
 
-    - name: tests
-      uses: actions-rs/cargo@v1
-      with:
-        command: test
-        args: --all --all-features
-
-  clippy:
+  linter:
+    name: Clippy + rustfmt + doc
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v5
 
-      - uses: actions-rs/toolchain@v1
+      - name: Setup Rust version ${{ env.MSRV }}
+        uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-          components: clippy
+          components: clippy,rustfmt
+          toolchain: ${{ env.MSRV }}
 
-      - name: clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --all-targets --all-features -- -D warnings
+      - name: Run cargo fmt
+        run: cargo fmt --all --check
 
-  check_fmt_and_docs:
-    name: Checking fmt and docs
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        components: rustfmt, clippy
-        override: true
+      - name: Run cargo clippy
+        run: cargo clippy --workspace --all-features --examples
 
-    - name: fmt
-      run: cargo fmt --all -- --check
-
-    - name: Docs
-      run: cargo doc
-
-  fuzz:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-
-      - run: cargo install cargo-fuzz
-      - name: compile fuzz
-        run: |
-          cargo fuzz build fuzz_read
+      - name: Run cargo doc
+        run: cargo doc --no-deps --workspace --document-private-items --all-features
