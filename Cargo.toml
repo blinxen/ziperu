@@ -49,7 +49,7 @@ deflate-zlib = ["flate2/zlib"]
 lzma = ["dep:lzma-rust2"]
 xz = ["dep:lzma-rust2", "lzma-rust2/xz"]
 unreserved = []
-default = ["aes-crypto", "bzip2", "deflate", "time", "zstd", "lzma", "xz"]
+default = ["aes-crypto", "bzip2", "deflate", "time", "zstd"]
 
 [[bench]]
 name = "read_entry"
