@@ -65,6 +65,10 @@ enum GenericZipWriter<W: Write + io::Seek> {
     Bzip2(BzEncoder<MaybeEncrypted<W>>),
     #[cfg(feature = "zstd")]
     Zstd(ZstdEncoder<'static, MaybeEncrypted<W>>),
+    #[cfg(feature = "lzma")]
+    Lzma(lzma_rust2::LzmaWriter<MaybeEncrypted<W>>),
+    #[cfg(feature = "xz")]
+    Xz(lzma_rust2::XzWriter<MaybeEncrypted<W>>),
 }
 // Put the struct declaration in a private module to convince rustdoc to display ZipWriter nicely
 pub(crate) mod zip_writer {
@@ -926,6 +930,10 @@ impl<W: Write + io::Seek> GenericZipWriter<W> {
             GenericZipWriter::Bzip2(w) => w.finish()?,
             #[cfg(feature = "zstd")]
             GenericZipWriter::Zstd(w) => w.finish()?,
+            #[cfg(feature = "lzma")]
+            GenericZipWriter::Lzma(w) => w.finish()?,
+            #[cfg(feature = "xz")]
+            GenericZipWriter::Xz(w) => w.finish()?,
             GenericZipWriter::Closed => {
                 return Err(io::Error::new(
                     io::ErrorKind::BrokenPipe,
@@ -1001,7 +1009,36 @@ impl<W: Write + io::Seek> GenericZipWriter<W> {
                             "Unsupported compression level",
                         ))?,
                     )
-                    .unwrap(),
+                    .map_err(ZipError::Io)?,
+                ),
+                #[cfg(feature = "lzma")]
+                CompressionMethod::Lzma => GenericZipWriter::Lzma(
+                    lzma_rust2::LzmaWriter::new(
+                        bare,
+                        &lzma_rust2::LzmaOptions::with_preset(
+                            clamp_opt(compression_level.unwrap_or(6), xz_compression_level_range())
+                                .ok_or(ZipError::UnsupportedArchive(
+                                    "Unsupported compression level",
+                                ))? as u32,
+                        ),
+                        true,
+                        false,
+                        None,
+                    )
+                    .map_err(ZipError::Io)?,
+                ),
+                #[cfg(feature = "xz")]
+                CompressionMethod::Xz => GenericZipWriter::Xz(
+                    lzma_rust2::XzWriter::new(
+                        bare,
+                        lzma_rust2::XzOptions::with_preset(
+                            clamp_opt(compression_level.unwrap_or(6), xz_compression_level_range())
+                                .ok_or(ZipError::UnsupportedArchive(
+                                    "Unsupported compression level",
+                                ))? as u32,
+                        ),
+                    )
+                    .map_err(ZipError::Io)?,
                 ),
                 CompressionMethod::Unsupported(..) => {
                     return Err(ZipError::UnsupportedArchive("Unsupported compression"));
@@ -1025,6 +1062,10 @@ impl<W: Write + io::Seek> GenericZipWriter<W> {
             GenericZipWriter::Bzip2(ref mut w) => Some(w as &mut dyn Write),
             #[cfg(feature = "zstd")]
             GenericZipWriter::Zstd(ref mut w) => Some(w as &mut dyn Write),
+            #[cfg(feature = "lzma")]
+            GenericZipWriter::Lzma(ref mut w) => Some(w as &mut dyn Write),
+            #[cfg(feature = "xz")]
+            GenericZipWriter::Xz(ref mut w) => Some(w as &mut dyn Write),
             GenericZipWriter::Closed => None,
         }
     }
@@ -1053,6 +1094,10 @@ impl<W: Write + io::Seek> GenericZipWriter<W> {
             GenericZipWriter::Bzip2(..) => Some(CompressionMethod::Bzip2),
             #[cfg(feature = "zstd")]
             GenericZipWriter::Zstd(..) => Some(CompressionMethod::Zstd),
+            #[cfg(feature = "lzma")]
+            GenericZipWriter::Lzma(..) => Some(CompressionMethod::Lzma),
+            #[cfg(feature = "xz")]
+            GenericZipWriter::Xz(..) => Some(CompressionMethod::Xz),
             GenericZipWriter::Closed => None,
         }
     }
@@ -1080,6 +1125,13 @@ fn deflate_compression_level_range() -> std::ops::RangeInclusive<i32> {
 fn bzip2_compression_level_range() -> std::ops::RangeInclusive<i32> {
     let min = bzip2::Compression::fast().level() as i32;
     let max = bzip2::Compression::best().level() as i32;
+    min..=max
+}
+
+#[cfg(feature = "xz")]
+fn xz_compression_level_range() -> std::ops::RangeInclusive<i32> {
+    let min = 0_i32;
+    let max = 9_i32;
     min..=max
 }
 

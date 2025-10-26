@@ -34,8 +34,15 @@ use bzip2::read::BzDecoder;
 #[cfg(feature = "zstd")]
 use zstd::stream::read::Decoder as ZstdDecoder;
 
+#[cfg(feature = "xz")]
+use lzma_rust2::XzReader;
+
 /// Provides high level API for reading from a stream.
 pub(crate) mod stream;
+
+#[cfg(feature = "lzma")]
+/// Provides a reader for the lzma crate
+pub(crate) mod lzma_reader;
 
 // Put the struct declaration in a private module to convince rustdoc to display ZipArchive nicely
 pub(crate) mod zip_archive {
@@ -141,6 +148,10 @@ enum ZipFileReader<'a> {
     Bzip2(Crc32Reader<BzDecoder<CryptoReader<'a>>>),
     #[cfg(feature = "zstd")]
     Zstd(Crc32Reader<ZstdDecoder<'a, io::BufReader<CryptoReader<'a>>>>),
+    #[cfg(feature = "lzma")]
+    Lzma(Crc32Reader<lzma_reader::LzmaReader<CryptoReader<'a>>>),
+    #[cfg(feature = "xz")]
+    Xz(Crc32Reader<XzReader<CryptoReader<'a>>>),
 }
 
 impl<'a> Read for ZipFileReader<'a> {
@@ -161,6 +172,10 @@ impl<'a> Read for ZipFileReader<'a> {
             ZipFileReader::Bzip2(r) => r.read(buf),
             #[cfg(feature = "zstd")]
             ZipFileReader::Zstd(r) => r.read(buf),
+            #[cfg(feature = "lzma")]
+            ZipFileReader::Lzma(r) => r.read(buf),
+            #[cfg(feature = "xz")]
+            ZipFileReader::Xz(r) => r.read(buf),
         }
     }
 }
@@ -184,6 +199,10 @@ impl<'a> ZipFileReader<'a> {
             ZipFileReader::Bzip2(r) => r.into_inner().into_inner().into_inner(),
             #[cfg(feature = "zstd")]
             ZipFileReader::Zstd(r) => r.into_inner().finish().into_inner().into_inner(),
+            #[cfg(feature = "lzma")]
+            ZipFileReader::Lzma(r) => r.into_inner().into_inner().into_inner(),
+            #[cfg(feature = "xz")]
+            ZipFileReader::Xz(r) => r.into_inner().into_inner().into_inner(),
         }
     }
 }
@@ -268,6 +287,7 @@ fn make_crypto_reader<'a>(
 
 fn make_reader(
     compression_method: CompressionMethod,
+    uncompressed_size: u64,
     crc32: u32,
     reader: CryptoReader,
 ) -> ZipFileReader {
@@ -300,6 +320,16 @@ fn make_reader(
         CompressionMethod::Zstd => {
             let zstd_reader = ZstdDecoder::new(reader).unwrap();
             ZipFileReader::Zstd(Crc32Reader::new(zstd_reader, crc32, ae2_encrypted))
+        }
+        #[cfg(feature = "lzma")]
+        CompressionMethod::Lzma => {
+            let lzma_reader = lzma_reader::LzmaReader::new(reader, uncompressed_size);
+            ZipFileReader::Lzma(Crc32Reader::new(lzma_reader, crc32, ae2_encrypted))
+        }
+        #[cfg(feature = "xz")]
+        CompressionMethod::Xz => {
+            let xz_reader = XzReader::new(reader, false);
+            ZipFileReader::Xz(Crc32Reader::new(xz_reader, crc32, ae2_encrypted))
         }
         _ => panic!("Compression method not supported"),
     }
@@ -834,7 +864,12 @@ impl<'a> ZipFile<'a> {
         if let ZipFileReader::NoReader = self.reader {
             let data = &self.data;
             let crypto_reader = self.crypto_reader.take().expect("Invalid reader state");
-            self.reader = make_reader(data.compression_method, data.crc32, crypto_reader)
+            self.reader = make_reader(
+                data.compression_method,
+                data.uncompressed_size,
+                data.crc32,
+                crypto_reader,
+            )
         }
         &mut self.reader
     }
@@ -1110,6 +1145,7 @@ pub fn read_zipfile_from_stream<'a, R: io::Read>(
 
     let limit_reader = (reader as &'a mut dyn io::Read).take(result.compressed_size);
 
+    let result_uncompressed_size = result.uncompressed_size;
     let result_crc32 = result.crc32;
     let result_compression_method = result.compression_method;
     let crypto_reader = make_crypto_reader(
@@ -1128,7 +1164,12 @@ pub fn read_zipfile_from_stream<'a, R: io::Read>(
     Ok(Some(ZipFile {
         data: Cow::Owned(result),
         crypto_reader: None,
-        reader: make_reader(result_compression_method, result_crc32, crypto_reader),
+        reader: make_reader(
+            result_compression_method,
+            result_uncompressed_size,
+            result_crc32,
+            crypto_reader,
+        ),
     }))
 }
 

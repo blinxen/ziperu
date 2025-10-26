@@ -33,6 +33,9 @@ pub enum ZipError {
 
     /// The requested file could not be found in the archive
     FileNotFound,
+
+    /// Could not construct a reader with the given input
+    ReaderError,
 }
 
 impl From<io::Error> for ZipError {
@@ -48,6 +51,7 @@ impl fmt::Display for ZipError {
             ZipError::InvalidArchive(err) => write!(fmt, "invalid Zip archive: {err}"),
             ZipError::UnsupportedArchive(err) => write!(fmt, "unsupported Zip archive: {err}"),
             ZipError::FileNotFound => write!(fmt, "specified file not found in archive"),
+            ZipError::ReaderError => write!(fmt, "reader could not be constructed"),
         }
     }
 }

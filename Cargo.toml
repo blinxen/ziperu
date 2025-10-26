@@ -30,6 +30,7 @@ sha1 = {version = "0.10.6", optional = true }
 time = { version = "0.3.44", optional = true, default-features = false, features = ["std"] }
 zstd = { version = "0.13.3", optional = true }
 deflate64 = { version = "0.1.10", optional = true }
+lzma-rust2 = { version = "0.14.3", optional = true, default-features = false, features = ["std", "encoder", "xz"] }
 
 [target.'cfg(not(target_has_atomic = "64"))'.dependencies]
 crossbeam-utils = "0.8.21"
@@ -45,8 +46,10 @@ aes-crypto = [ "aes", "constant_time_eq", "hmac", "pbkdf2", "sha1" ]
 deflate = ["flate2/rust_backend"]
 deflate-miniz = ["flate2/default"]
 deflate-zlib = ["flate2/zlib"]
+lzma = ["dep:lzma-rust2"]
+xz = ["dep:lzma-rust2", "lzma-rust2/xz"]
 unreserved = []
-default = ["aes-crypto", "bzip2", "deflate", "time", "zstd"]
+default = ["aes-crypto", "bzip2", "deflate", "time", "zstd", "lzma", "xz"]
 
 [[bench]]
 name = "read_entry"
