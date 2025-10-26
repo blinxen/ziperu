@@ -4,9 +4,7 @@
 //! different byte order (little endian) than NIST (big endian).
 //! See [AesCtrZipKeyStream] for more information.
 
-use aes::cipher::generic_array::GenericArray;
-// use aes::{BlockEncrypt, NewBlockCipher};
-use aes::cipher::{BlockEncrypt, KeyInit};
+use aes::cipher::{BlockCipherEncrypt, KeyInit};
 use byteorder::WriteBytesExt;
 use std::{any, fmt};
 
@@ -93,7 +91,7 @@ where
     pub fn new(key: &[u8]) -> AesCtrZipKeyStream<C> {
         AesCtrZipKeyStream {
             counter: 1,
-            cipher: C::Cipher::new(GenericArray::from_slice(key)),
+            cipher: C::Cipher::new(key.try_into().expect("invalid key length for cipher")),
             buffer: [0u8; AES_BLOCK_SIZE],
             pos: AES_BLOCK_SIZE,
         }
@@ -103,9 +101,13 @@ where
 impl<C> AesCipher for AesCtrZipKeyStream<C>
 where
     C: AesKind,
-    C::Cipher: BlockEncrypt,
+    C::Cipher: BlockCipherEncrypt,
 {
     /// Decrypt or encrypt `target`.
+    ///
+    /// # Panics
+    ///
+    /// This panics if `[AesCtrZipKeyStream::buffer]` does not have the right size.
     #[inline]
     fn crypt_in_place(&mut self, mut target: &mut [u8]) {
         while !target.is_empty() {
@@ -115,8 +117,12 @@ where
                     .as_mut()
                     .write_u128::<byteorder::LittleEndian>(self.counter)
                     .expect("did not expect u128 le conversion to fail");
-                self.cipher
-                    .encrypt_block(GenericArray::from_mut_slice(&mut self.buffer));
+                self.cipher.encrypt_block(
+                    self.buffer
+                        .as_mut()
+                        .try_into()
+                        .expect("slice length mismatch"),
+                );
                 self.counter += 1;
                 self.pos = 0;
             }
@@ -151,14 +157,14 @@ fn xor(dest: &mut [u8], src: &[u8]) {
 #[cfg(test)]
 mod tests {
     use super::{Aes128, Aes192, Aes256, AesCipher, AesCtrZipKeyStream, AesKind};
-    use aes::cipher::{BlockEncrypt, KeyInit};
+    use aes::cipher::{BlockCipherEncrypt, KeyInit};
 
     /// Checks whether `crypt_in_place` produces the correct plaintext after one use and yields the
     /// cipertext again after applying it again.
     fn roundtrip<Aes>(key: &[u8], ciphertext: &mut [u8], expected_plaintext: &[u8])
     where
         Aes: AesKind,
-        Aes::Cipher: KeyInit + BlockEncrypt,
+        Aes::Cipher: KeyInit + BlockCipherEncrypt,
     {
         let mut key_stream = AesCtrZipKeyStream::<Aes>::new(key);
 
