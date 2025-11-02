@@ -436,6 +436,8 @@ impl ZipFileData {
             CompressionMethod::Deflate64 => 21,
             #[cfg(feature = "bzip2")]
             CompressionMethod::Bzip2 => 46,
+            #[cfg(feature = "lzma")]
+            CompressionMethod::Lzma => 63,
             _ => DEFAULT_MINIMUM_ZIP_SPECIFICATION_VERSION,
         };
 
