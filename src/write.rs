@@ -67,15 +67,15 @@ struct ZipRawValues {
 /// ```
 /// # fn doit() -> ziperu::result::ZipResult<()>
 /// # {
-/// # use ziperu::ZipWriter;
-/// use std::io::Write;
+/// use std::io::{Cursor, Write};
+/// use ziperu::{ZipWriter, CompressionMethod};
 /// use ziperu::write::FileOptions;
 ///
 /// // We use a buffer here, though you'd normally use a `File`
 /// let mut buf = [0; 65536];
-/// let mut zip = ziperu::ZipWriter::new(std::io::Cursor::new(&mut buf[..]));
+/// let mut zip = ZipWriter::new(Cursor::new(&mut buf[..]));
 ///
-/// let options = ziperu::write::FileOptions::default().compression_method(ziperu::CompressionMethod::Stored);
+/// let options = FileOptions::default().compression_method(CompressionMethod::Stored);
 /// zip.start_file("hello_world.txt", options)?;
 /// zip.write(b"Hello, World!")?;
 ///

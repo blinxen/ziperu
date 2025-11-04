@@ -39,6 +39,8 @@ pub enum CompressionMethod {
     #[cfg(feature = "zstd")]
     Zstd,
     /// Compress the file using lzma
+    ///
+    /// **IMPORTANT**: Only decompression is currently supported
     #[cfg(feature = "lzma")]
     Lzma,
     /// Compress the file using xz
@@ -176,8 +178,6 @@ pub const SUPPORTED_COMPRESSION_METHODS: &[CompressionMethod] = &[
     CompressionMethod::Bzip2,
     #[cfg(feature = "zstd")]
     CompressionMethod::Zstd,
-    #[cfg(feature = "lzma")]
-    CompressionMethod::Lzma,
     #[cfg(feature = "xz")]
     CompressionMethod::Xz,
 ];

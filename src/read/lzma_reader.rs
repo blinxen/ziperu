@@ -46,7 +46,6 @@ impl<R: Read> Read for LzmaReader<R> {
                 // 5.8.8.1 LZMA Version Information & 5.8.8.2 LZMA Properties Size
                 let mut header = [0; 4];
                 reader.read_exact(&mut header)?;
-                let _version_information = u16::from_le_bytes(header[0..2].try_into().unwrap());
                 let properties_size = u16::from_le_bytes(header[2..4].try_into().unwrap());
                 if properties_size != 5 {
                     return Err(Error::new(

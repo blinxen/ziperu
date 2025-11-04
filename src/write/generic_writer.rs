@@ -27,8 +27,6 @@ pub(crate) enum GenericZipWriter<W: Write + Seek> {
     Bzip2(BzEncoder<MaybeEncrypted<W>>),
     #[cfg(feature = "zstd")]
     Zstd(ZstdEncoder<'static, MaybeEncrypted<W>>),
-    #[cfg(feature = "lzma")]
-    Lzma(Box<lzma_rust2::LzmaWriter<MaybeEncrypted<W>>>),
     #[cfg(feature = "xz")]
     Xz(Box<lzma_rust2::XzWriter<MaybeEncrypted<W>>>),
 }
@@ -63,8 +61,6 @@ impl<W: Write + Seek> GenericZipWriter<W> {
             GenericZipWriter::Bzip2(w) => w.finish()?,
             #[cfg(feature = "zstd")]
             GenericZipWriter::Zstd(w) => w.finish()?,
-            #[cfg(feature = "lzma")]
-            GenericZipWriter::Lzma(w) => w.finish()?,
             #[cfg(feature = "xz")]
             GenericZipWriter::Xz(w) => w.finish()?,
             GenericZipWriter::Closed => {
@@ -145,19 +141,11 @@ impl<W: Write + Seek> GenericZipWriter<W> {
                     .map_err(ZipError::Io)?,
                 ),
                 #[cfg(feature = "lzma")]
-                CompressionMethod::Lzma => GenericZipWriter::Lzma(Box::new(
-                    lzma_rust2::LzmaWriter::new_no_header(
-                        bare,
-                        &lzma_rust2::LzmaOptions::with_preset(
-                            clamp_opt(compression_level.unwrap_or(6), 0..=9)
-                                .ok_or(ZipError::UnsupportedArchive(
-                                    "Unsupported compression level",
-                                ))? as u32,
-                        ),
-                        false,
-                    )
-                    .map_err(ZipError::Io)?,
-                )),
+                CompressionMethod::Lzma => {
+                    return Err(ZipError::UnsupportedArchive(
+                        "Compression using lzma is currently not supported",
+                    ));
+                }
                 #[cfg(feature = "xz")]
                 CompressionMethod::Xz => GenericZipWriter::Xz(Box::new(
                     lzma_rust2::XzWriter::new(
@@ -193,8 +181,6 @@ impl<W: Write + Seek> GenericZipWriter<W> {
             GenericZipWriter::Bzip2(ref mut w) => Some(w as &mut dyn Write),
             #[cfg(feature = "zstd")]
             GenericZipWriter::Zstd(ref mut w) => Some(w as &mut dyn Write),
-            #[cfg(feature = "lzma")]
-            GenericZipWriter::Lzma(ref mut w) => Some(w as &mut dyn Write),
             #[cfg(feature = "xz")]
             GenericZipWriter::Xz(ref mut w) => Some(w as &mut dyn Write),
             GenericZipWriter::Closed => None,
@@ -225,8 +211,6 @@ impl<W: Write + Seek> GenericZipWriter<W> {
             GenericZipWriter::Bzip2(..) => Some(CompressionMethod::Bzip2),
             #[cfg(feature = "zstd")]
             GenericZipWriter::Zstd(..) => Some(CompressionMethod::Zstd),
-            #[cfg(feature = "lzma")]
-            GenericZipWriter::Lzma(..) => Some(CompressionMethod::Lzma),
             #[cfg(feature = "xz")]
             GenericZipWriter::Xz(..) => Some(CompressionMethod::Xz),
             GenericZipWriter::Closed => None,
