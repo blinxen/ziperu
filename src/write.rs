@@ -3,7 +3,6 @@
 mod file_options;
 mod generic_writer;
 
-pub use crate::write::file_options::FileOptions;
 use crate::compression::CompressionMethod;
 use crate::read::{ZipArchive, ZipFile, central_header_to_zip_file};
 use crate::result::{ZipError, ZipResult};
@@ -11,6 +10,7 @@ use crate::spec;
 use crate::types::{
     APPNOTE_SPEC_VERSION, AtomicU64, DEFAULT_MINIMUM_ZIP_SPECIFICATION_VERSION, System, ZipFileData,
 };
+pub use crate::write::file_options::FileOptions;
 use crate::write::generic_writer::GenericZipWriter;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use crc32fast::Hasher;
@@ -153,10 +153,7 @@ impl<A: Read + Write + Seek> ZipWriter<A> {
         let (archive_offset, directory_start, number_of_files) =
             ZipArchive::get_directory_counts(&mut readwriter, &footer, cde_start_pos)?;
 
-        if readwriter
-            .seek(SeekFrom::Start(directory_start))
-            .is_err()
-        {
+        if readwriter.seek(SeekFrom::Start(directory_start)).is_err() {
             return Err(ZipError::InvalidArchive(
                 "Could not seek to start of central directory",
             ));
@@ -800,10 +797,7 @@ fn write_local_file_header<T: Write>(writer: &mut T, file: &ZipFileData) -> ZipR
     Ok(())
 }
 
-fn update_local_file_header<T: Write + Seek>(
-    writer: &mut T,
-    file: &ZipFileData,
-) -> ZipResult<()> {
+fn update_local_file_header<T: Write + Seek>(writer: &mut T, file: &ZipFileData) -> ZipResult<()> {
     const CRC32_OFFSET: u64 = 14;
     writer.seek(SeekFrom::Start(file.header_start + CRC32_OFFSET))?;
     writer.write_u32::<LittleEndian>(file.crc32)?;

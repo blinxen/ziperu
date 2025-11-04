@@ -1,5 +1,9 @@
+use crate::{
+    CompressionMethod,
+    result::{ZipError, ZipResult},
+    write::MaybeEncrypted,
+};
 use std::io::{Error, ErrorKind, Seek, Write};
-use crate::{result::{ZipError, ZipResult}, write::MaybeEncrypted, CompressionMethod};
 
 #[cfg(any(
     feature = "deflate",
@@ -40,11 +44,9 @@ impl<W: Write + Seek> GenericZipWriter<W> {
         match self.current_compression() {
             Some(method) if method == compression => return Ok(()),
             None => {
-                return Err(Error::new(
-                    ErrorKind::BrokenPipe,
-                    "ZipWriter was already closed",
-                )
-                .into());
+                return Err(
+                    Error::new(ErrorKind::BrokenPipe, "ZipWriter was already closed").into(),
+                );
             }
             _ => {}
         }
@@ -64,11 +66,9 @@ impl<W: Write + Seek> GenericZipWriter<W> {
             #[cfg(feature = "xz")]
             GenericZipWriter::Xz(w) => w.finish()?,
             GenericZipWriter::Closed => {
-                return Err(Error::new(
-                    ErrorKind::BrokenPipe,
-                    "ZipWriter was already closed",
-                )
-                .into());
+                return Err(
+                    Error::new(ErrorKind::BrokenPipe, "ZipWriter was already closed").into(),
+                );
             }
         };
 
@@ -151,10 +151,9 @@ impl<W: Write + Seek> GenericZipWriter<W> {
                     lzma_rust2::XzWriter::new(
                         bare,
                         lzma_rust2::XzOptions::with_preset(
-                            clamp_opt(compression_level.unwrap_or(6), 0..=9)
-                                .ok_or(ZipError::UnsupportedArchive(
-                                    "Unsupported compression level",
-                                ))? as u32,
+                            clamp_opt(compression_level.unwrap_or(6), 0..=9).ok_or(
+                                ZipError::UnsupportedArchive("Unsupported compression level"),
+                            )? as u32,
                         ),
                     )
                     .map_err(ZipError::Io)?,

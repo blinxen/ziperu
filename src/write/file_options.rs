@@ -1,6 +1,6 @@
 use std::convert::TryInto;
 
-use crate::{compression::CompressionMethod, DateTime};
+use crate::{DateTime, compression::CompressionMethod};
 #[cfg(feature = "time")]
 use time::OffsetDateTime;
 
