@@ -95,7 +95,7 @@ enum CryptoReader<'a> {
     },
 }
 
-impl<'a> Read for CryptoReader<'a> {
+impl Read for CryptoReader<'_> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         match self {
             CryptoReader::Plaintext(r) => r.read(buf),
@@ -154,7 +154,7 @@ enum ZipFileReader<'a> {
     Xz(Crc32Reader<Box<XzReader<CryptoReader<'a>>>>),
 }
 
-impl<'a> Read for ZipFileReader<'a> {
+impl Read for ZipFileReader<'_> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         match self {
             ZipFileReader::NoReader => panic!("ZipFileReader was in an invalid state"),
@@ -1021,13 +1021,13 @@ impl<'a> ZipFile<'a> {
     }
 }
 
-impl<'a> Read for ZipFile<'a> {
+impl Read for ZipFile<'_> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.get_reader().read(buf)
     }
 }
 
-impl<'a> Drop for ZipFile<'a> {
+impl Drop for ZipFile<'_> {
     fn drop(&mut self) {
         // self.data is Owned, this reader is constructed by a streaming reader.
         // In this case, we want to exhaust the reader so that the next file is accessible.

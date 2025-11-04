@@ -826,7 +826,7 @@ fn write_central_directory_header<T: Write>(writer: &mut T, file: &ZipFileData) 
     // central file header signature
     writer.write_u32::<LittleEndian>(spec::CENTRAL_DIRECTORY_HEADER_SIGNATURE)?;
     // version made by
-    let version_made_by = (file.system as u16) << 8 | (file.version_made_by as u16);
+    let version_made_by = ((file.system as u16) << 8) | (file.version_made_by as u16);
     writer.write_u16::<LittleEndian>(version_made_by)?;
     // version needed to extract
     writer.write_u16::<LittleEndian>(file.version_needed())?;
